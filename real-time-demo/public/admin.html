@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Admin Panel</title>
+</head>
+
+<body>
+
+    <h1>Admin Panel</h1>
+
+    <input id="question" placeholder="Enter Question">
+
+    <br><br>
+
+    <input id="option1" placeholder="Option 1">
+
+    <br><br>
+
+    <input id="option2" placeholder="Option 2">
+
+    <br><br>
+
+    <input id="option3" placeholder="Option 3">
+
+    <br><br>
+
+    <button id="createPoll">
+        Create Poll
+    </button>
+
+    <script src="/socket.io/socket.io.js"></script>
+
+    <script>
+
+        const socket = io();
+
+        document.getElementById("createPoll").addEventListener("click", () => {
+
+            const poll = {
+
+                question: document.getElementById("question").value,
+
+                options: [
+
+                    document.getElementById("option1").value,
+
+                    document.getElementById("option2").value,
+
+                    document.getElementById("option3").value
+
+                ]
+
+            };
+
+            socket.emit("createPoll", poll);
+
+        });
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>SQAC Live Poll</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- Join Meeting Screen -->
+    <div id="joinScreen">
+
+        <h1>Join Meeting</h1>
+
+        <input id="name" placeholder="Enter Your Name">
+
+        <br><br>
+
+        <select id="role">
+            <option value="student">Student</option>
+            <option value="guest">Guest</option>
+        </select>
+
+        <br><br>
+
+        <input id="regNo" placeholder="Registration Number">
+
+        <br><br>
+
+        <button id="joinBtn">
+            Join Meeting
+        </button>
+
+    </div>
+
+    <!-- Poll Screen -->
+    <div id="pollScreen" style="display:none;">
+
+        <h1>SQAC Live Poll</h1>
+
+        <h2 id="question"></h2>
+
+        <div id="options"></div>
+
+        <button id="voteBtn">Vote</button>
+
+        <hr>
+
+        <h2>Live Results</h2>
+
+        <div id="results"></div>
+
+    </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+
+</body>
+
+</html>
