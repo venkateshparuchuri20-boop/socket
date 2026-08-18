@@ -35,6 +35,23 @@
     <button id="createPoll">
         Create Poll
     </button>
+    <hr>
+
+<h2>AI Meeting Summary</h2>
+
+<textarea
+    id="transcript"
+    rows="10"
+    cols="60"
+    placeholder="Paste the meeting transcript here..."></textarea>
+
+<br><br>
+
+<button id="generateSummary">
+    Generate AI Summary
+</button>
+
+<div id="summaryResult"></div>
 
     <script src="/socket.io/socket.io.js"></script>
 
@@ -77,6 +94,90 @@ socket.on("meetingCreated", (meetingId) => {
             socket.emit("createPoll", poll);
 
         });
+        document.getElementById("generateSummary").addEventListener("click", () => {
+
+    const transcript =
+        document.getElementById("transcript").value.trim();
+
+    if (transcript === "") {
+
+        alert("Please enter the meeting transcript.");
+
+        return;
+
+    }
+
+    socket.emit(
+        "generateSummary",
+        transcript
+    );
+
+});
+socket.on("summaryGenerated", (summary) => {
+
+    console.log("AI SUMMARY RECEIVED:", summary);
+
+    const result = document.getElementById("summaryResult");
+
+    result.innerHTML = `
+        <hr>
+
+        <h2>AI Summary</h2>
+        <p>${summary.summary || "No summary available."}</p>
+
+        <h3>Key Points</h3>
+        <ul>
+            ${(summary.keyPoints || [])
+                .map(point => `<li>${point}</li>`)
+                .join("")}
+        </ul>
+
+        <h3>Decisions</h3>
+        <ul>
+            ${(summary.decisions || [])
+                .map(decision => `<li>${decision}</li>`)
+                .join("")}
+        </ul>
+
+        <h3>Action Items</h3>
+        <ul>
+            ${(summary.actionItems || [])
+                .map(item => `
+                    <li>
+                        <strong>${item.person || "Team"}</strong>:
+                        ${item.task || ""}
+                        (Deadline: ${item.deadline || "None"})
+                    </li>
+                `)
+                .join("")}
+        </ul>
+
+        <h3>Unresolved Issues</h3>
+        <ul>
+            ${(summary.unresolvedIssues || [])
+                .map(issue => `<li>${issue}</li>`)
+                .join("")}
+        </ul>
+    `;
+
+});
+socket.on("summaryError", (message) => {
+
+    alert(message);
+
+});
+
+socket.on("emptyTranscript", () => {
+
+    alert("Please enter a meeting transcript.");
+
+});
+
+socket.on("notAuthorized", () => {
+
+    alert("Only the meeting admin can generate the summary.");
+
+});
 
     </script>
 

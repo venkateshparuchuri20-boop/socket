@@ -1,6 +1,7 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+const { generateSummary } = require("./ai-summarizer");
 
 const app = express();
 
@@ -26,14 +27,17 @@ io.on("connection", (socket) => {
 
         meetings[meetingId] = {
 
-            currentPoll: null,
+    currentPoll: null,
 
-            votes: {},
+    votes: {},
 
-            votedUsers: {}
+    votedUsers: {},
 
-        };
+    transcript: "",
 
+    summary: null
+
+};
         users[socket.id] = {
 
             meetingId: meetingId,
@@ -243,6 +247,84 @@ io.on("connection", (socket) => {
         );
 
     });
+    socket.on("generateSummary", async (transcript) => {
+
+    const user = users[socket.id];
+
+    if (!user) {
+
+        socket.emit("notJoined");
+
+        return;
+
+    }
+
+    if (user.role !== "admin") {
+
+        socket.emit("notAuthorized");
+
+        return;
+
+    }
+
+    const meetingId = user.meetingId;
+
+    const meeting = meetings[meetingId];
+
+    if (!meeting) {
+
+        socket.emit("meetingNotFound");
+
+        return;
+
+    }
+
+    if (!transcript || transcript.trim() === "") {
+
+        socket.emit("emptyTranscript");
+
+        return;
+
+    }
+
+    try {
+
+        meeting.transcript = transcript;
+
+        const summary = await generateSummary(transcript);
+
+        meeting.summary = summary;
+
+        console.log(
+    "AI summary generated for:",
+    meetingId
+);
+
+console.log(
+    "AI SUMMARY:",
+    JSON.stringify(summary, null, 2)
+);
+
+        socket.emit(
+            "summaryGenerated",
+            summary
+        );
+
+    } catch (error) {
+
+        console.error(
+            "AI summary error:",
+            error
+        );
+
+        socket.emit(
+            "summaryError",
+            "Failed to generate AI summary."
+        );
+
+    }
+
+});
 
     socket.on("disconnect", () => {
 
