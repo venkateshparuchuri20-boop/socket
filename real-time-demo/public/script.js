@@ -1,84 +1,133 @@
 const socket = io();
-document.getElementById("joinBtn").addEventListener("click", () => {
 
-    const name = document.getElementById("name").value.trim();
 
-    const role = document.getElementById("role").value;
 
-    const regNo = document.getElementById("regNo").value.trim();
-
-    // Student must enter registration number
-    if (role === "student" && regNo === "") {
-        alert("Please enter your Registration Number.");
-        return;
-    }
-
-    socket.emit("joinMeeting", {
-        name,
-        role,
-        regNo
-    });
-
-});
 
 console.log("Connected to Socket.IO");
 
 socket.on("connect", () => {
     console.log("Socket Connected");
 });
+
+
+// ==========================
+// JOIN MEETING
+// ==========================
+
 document.getElementById("joinBtn").addEventListener("click", () => {
 
-    const name = document.getElementById("name").value;
-
+    const meetingId = document.getElementById("meetingId").value.trim();
+    const name = document.getElementById("name").value.trim();
     const role = document.getElementById("role").value;
+    const regNo = document.getElementById("regNo").value.trim();
 
-    const regNo = document.getElementById("regNo").value;
+    if (meetingId === "") {
+        alert("Please enter the Meeting ID.");
+        return;
+    }
 
-    socket.emit("joinMeeting", {
+    if (name === "") {
+        alert("Please enter your name.");
+        return;
+    }
 
-        name,
+    if (role === "student" && regNo === "") {
+        alert("Please enter your Registration Number.");
+        return;
+    }
 
-        role,
+    const user = {
+        meetingId: meetingId,
+        name: name,
+        role: role,
+        regNo: role === "student" ? regNo : null
+    };
 
-        regNo
-
-    });
+    socket.emit("joinMeeting", user);
 
 });
 
+
+// ==========================
+// JOIN SUCCESS
+// ==========================
+
+socket.on("joinedSuccessfully", () => {
+
+    document.getElementById("joinScreen").style.display = "none";
+
+    document.getElementById("pollScreen").style.display = "block";
+
+});
+
+
+// ==========================
+// MEETING NOT FOUND
+// ==========================
+
+socket.on("meetingNotFound", () => {
+
+    alert("Meeting not found. Please check the Meeting ID.");
+
+});
+
+
+// ==========================
+// VOTE
+// ==========================
+
 document.getElementById("voteBtn").addEventListener("click", () => {
 
-    const selected = document.querySelector('input[name="language"]:checked');
+    const selected = document.querySelector(
+        'input[name="language"]:checked'
+    );
 
-    if(selected){
+    if (selected) {
 
         socket.emit("vote", selected.value);
 
-    }
-    else{
+    } else {
 
         alert("Please select one option.");
 
     }
 
 });
+
+
+// ==========================
+// LIVE RESULTS
+// ==========================
+
 socket.on("voteUpdate", (votes) => {
-const resultsDiv = document.getElementById("results");
 
-resultsDiv.innerHTML = "";
+    console.log("LIVE RESULTS RECEIVED:", votes);
 
-for (let option in votes) {
+    const resultsDiv = document.getElementById("results");
 
-    resultsDiv.innerHTML += `
-        <p>${option} : ${votes[option]}</p>
-    `;
+    resultsDiv.innerHTML = "";
 
-}
+    for (let option in votes) {
+
+        resultsDiv.innerHTML += `
+            <p>${option} : ${votes[option]}</p>
+        `;
+
+    }
 
 });
+
+
+// ==========================
+// CURRENT POLL
+// ==========================
+
 socket.on("currentPoll", (poll) => {
 
-    
+    if (!poll) {
+        return;
+    }
+
     document.getElementById("question").innerText = poll.question;
 
     const optionsDiv = document.getElementById("options");
@@ -94,25 +143,39 @@ socket.on("currentPoll", (poll) => {
         `;
 
     });
-    socket.on("joinedSuccessfully", () => {
-
-    document.getElementById("joinScreen").style.display = "none";
-
-    document.getElementById("pollScreen").style.display = "block";
-
-});
-    socket.on("joinedSuccessfully", () => {
-
-    document.getElementById("joinScreen").style.display = "none";
-
-    document.getElementById("pollScreen").style.display = "block";
 
 });
 
-    socket.on("alreadyVoted", () => {
+
+// ==========================
+// ALREADY VOTED
+// ==========================
+
+socket.on("alreadyVoted", () => {
 
     alert("You have already voted!");
 
 });
+
+
+// ==========================
+// ROLE SELECTION
+// ==========================
+
+const roleSelect = document.getElementById("role");
+const regNoInput = document.getElementById("regNo");
+
+roleSelect.addEventListener("change", () => {
+
+    if (roleSelect.value === "guest") {
+
+        regNoInput.style.display = "none";
+        regNoInput.value = "";
+
+    } else {
+
+        regNoInput.style.display = "inline-block";
+
+    }
 
 });

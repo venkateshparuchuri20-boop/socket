@@ -3,95 +3,264 @@ const http = require("http");
 const { Server } = require("socket.io");
 
 const app = express();
+
 app.use(express.static("public"));
 
 const server = http.createServer(app);
 
-
 const io = new Server(server);
-let currentPoll = {
 
-    question: "Which language do you prefer?",
+let meetings = {};
 
-    options: [
-
-        "Python",
-
-        "Java",
-
-        "C++"
-
-    ]
-
-};
-let votes = {
-
-    Python: 0,
-
-    Java: 0,
-
-    "C++": 0
-
-};
-let votedUsers = {};
 let users = {};
 
 io.on("connection", (socket) => {
+
+    console.log("A user connected!");
+
+    socket.on("createMeeting", () => {
+
+        const meetingId = "MEET" + String(
+            Object.keys(meetings).length + 1
+        ).padStart(3, "0");
+
+        meetings[meetingId] = {
+
+            currentPoll: null,
+
+            votes: {},
+
+            votedUsers: {}
+
+        };
+
+        users[socket.id] = {
+
+            meetingId: meetingId,
+
+            role: "admin"
+
+        };
+
+        console.log("Meeting created:", meetingId);
+
+        console.log(
+            "Admin assigned to meeting:",
+            meetingId
+        );
+
+        socket.emit(
+            "meetingCreated",
+            meetingId
+        );
+
+    });
+
     socket.on("joinMeeting", (user) => {
 
-    users[socket.id] = user;
+        users[socket.id] = user;
 
-    console.log(users);
+        socket.join(user.meetingId);
 
-    socket.emit("joinedSuccessfully");
+        console.log("User joined:", user);
 
-});
-    console.log("A user connected!");
-    socket.emit("currentPoll", currentPoll);
+        console.log(
+            "Joined room:",
+            user.meetingId
+        );
+
+        const meeting = meetings[user.meetingId];
+
+        if (meeting) {
+
+            if (meeting.currentPoll) {
+
+                socket.emit(
+                    "currentPoll",
+                    meeting.currentPoll
+                );
+
+            }
+
+            socket.emit(
+                "voteUpdate",
+                meeting.votes
+            );
+
+            socket.emit(
+                "joinedSuccessfully"
+            );
+
+        } else {
+
+            socket.emit(
+                "meetingNotFound"
+            );
+
+        }
+
+    });
+
     socket.on("vote", (language) => {
 
-    if (votedUsers[socket.id]) {
+        const user = users[socket.id];
 
-        socket.emit("alreadyVoted");
-        return;
+        if (!user) {
 
-    }
+            socket.emit("notJoined");
 
-    votedUsers[socket.id] = true;
+            return;
 
-    votes[language]++;
+        }
 
-    console.log(votes);
+        const meetingId = user.meetingId;
 
-    io.emit("voteUpdate", votes);
+        const meeting = meetings[meetingId];
 
-});
-   
+        if (!meeting) {
 
-    socket.on("disconnect", () => {
-        console.log("A user disconnected!");
+            socket.emit("meetingNotFound");
+
+            return;
+
+        }
+
+        if (!meeting.currentPoll) {
+
+            socket.emit("noPoll");
+
+            return;
+
+        }
+
+        const voterId = user.role === "student"
+            ? user.regNo
+            : socket.id;
+
+        if (meeting.votedUsers[voterId]) {
+
+            socket.emit("alreadyVoted");
+
+            return;
+
+        }
+
+        if (!(language in meeting.votes)) {
+
+            socket.emit("invalidOption");
+
+            return;
+
+        }
+
+        meeting.votedUsers[voterId] = true;
+
+        meeting.votes[language]++;
+
+        console.log("Vote accepted:", {
+
+            meetingId: meetingId,
+
+            voterId: voterId,
+
+            language: language
+
+        });
+
+        io.to(meetingId).emit(
+            "voteUpdate",
+            meeting.votes
+        );
+
     });
 
     socket.on("createPoll", (poll) => {
-        votedUsers = {};
 
-    currentPoll = poll;
+        const user = users[socket.id];
 
-    votes = {};
+        if (!user) {
 
-    poll.options.forEach((option) => {
-        votes[option] = 0;
+            socket.emit("notJoined");
+
+            return;
+
+        }
+
+        const meetingId = user.meetingId;
+
+        const meeting = meetings[meetingId];
+
+        if (!meeting) {
+
+            socket.emit("meetingNotFound");
+
+            return;
+
+        }
+
+        if (!poll.question.trim()) {
+
+            socket.emit("invalidPoll");
+
+            return;
+
+        }
+
+        meeting.currentPoll = poll;
+
+        meeting.votes = {};
+
+        poll.options.forEach((option) => {
+
+            if (option.trim() !== "") {
+
+                meeting.votes[option] = 0;
+
+            }
+
+        });
+
+        meeting.votedUsers = {};
+
+        console.log(
+            "New poll created for:",
+            meetingId
+        );
+
+        console.log(
+            "Poll:",
+            poll
+        );
+
+        io.to(meetingId).emit(
+            "currentPoll",
+            meeting.currentPoll
+        );
+
+        io.to(meetingId).emit(
+            "voteUpdate",
+            meeting.votes
+        );
+
     });
 
-    io.emit("currentPoll", currentPoll);
+    socket.on("disconnect", () => {
 
-    io.emit("voteUpdate", votes);
+        console.log(
+            "A user disconnected:",
+            socket.id
+        );
 
-});
+        delete users[socket.id];
 
+    });
 
 });
 
 server.listen(3000, () => {
-    console.log("Server running on port 3000");
+
+    console.log(
+        "Server running on port 3000"
+    );
+
 });

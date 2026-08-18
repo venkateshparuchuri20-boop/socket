@@ -8,6 +8,13 @@
 <body>
 
     <h1>Admin Panel</h1>
+    <button id="createMeeting">
+    Create Meeting
+</button>
+
+<h2 id="meetingInfo"></h2>
+
+<br><br>
 
     <input id="question" placeholder="Enter Question">
 
@@ -34,6 +41,20 @@
     <script>
 
         const socket = io();
+        
+
+document.getElementById("createMeeting").addEventListener("click", () => {
+
+    socket.emit("createMeeting");
+
+});
+
+socket.on("meetingCreated", (meetingId) => {
+
+    document.getElementById("meetingInfo").innerText =
+        "Meeting ID: " + meetingId;
+
+});
 
         document.getElementById("createPoll").addEventListener("click", () => {
 
