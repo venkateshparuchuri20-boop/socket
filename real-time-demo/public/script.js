@@ -1,69 +1,88 @@
 const socket = io();
 
+let selectedOption = null;
+
+const joinScreen = document.getElementById("joinScreen");
+const pollScreen = document.getElementById("pollScreen");
+
+const meetingIdInput = document.getElementById("meetingId");
+const nameInput = document.getElementById("name");
+const roleInput = document.getElementById("role");
+const regNoInput = document.getElementById("regNo");
+
+const joinBtn = document.getElementById("joinBtn");
+
+const question = document.getElementById("question");
+const options = document.getElementById("options");
+const results = document.getElementById("results");
+
+const voteBtn = document.getElementById("voteBtn");
+
+const chatMessages = document.getElementById("chatMessages");
+const messageInput = document.getElementById("messageInput");
+const sendMessageBtn = document.getElementById("sendMessageBtn");
 
 
+joinBtn.addEventListener("click", () => {
 
-console.log("Connected to Socket.IO");
-
-socket.on("connect", () => {
-    console.log("Socket Connected");
-});
-
-
-// ==========================
-// JOIN MEETING
-// ==========================
-
-document.getElementById("joinBtn").addEventListener("click", () => {
-
-    const meetingId = document.getElementById("meetingId").value.trim();
-    const name = document.getElementById("name").value.trim();
-    const role = document.getElementById("role").value;
-    const regNo = document.getElementById("regNo").value.trim();
+    const meetingId = meetingIdInput.value.trim();
+    const name = nameInput.value.trim();
+    const role = roleInput.value;
+    const regNo = regNoInput.value.trim();
 
     if (meetingId === "") {
-        alert("Please enter the Meeting ID.");
+
+        alert("Please enter Meeting ID");
         return;
+
     }
 
     if (name === "") {
-        alert("Please enter your name.");
+
+        alert("Please enter your name");
         return;
+
     }
 
     if (role === "student" && regNo === "") {
-        alert("Please enter your Registration Number.");
+
+        alert("Please enter Registration Number");
         return;
+
     }
 
     const user = {
+
         meetingId: meetingId,
+
         name: name,
+
         role: role,
-        regNo: role === "student" ? regNo : null
+
+        regNo: regNo
+
     };
 
-    socket.emit("joinMeeting", user);
+    console.log("Joining meeting:", user);
+
+    socket.emit(
+        "joinMeeting",
+        user
+    );
 
 });
 
-
-// ==========================
-// JOIN SUCCESS
-// ==========================
 
 socket.on("joinedSuccessfully", () => {
 
-    document.getElementById("joinScreen").style.display = "none";
+    console.log("Successfully joined meeting");
 
-    document.getElementById("pollScreen").style.display = "block";
+    joinScreen.style.display = "none";
+
+    pollScreen.style.display = "block";
 
 });
 
-
-// ==========================
-// MEETING NOT FOUND
-// ==========================
 
 socket.on("meetingNotFound", () => {
 
@@ -72,110 +91,259 @@ socket.on("meetingNotFound", () => {
 });
 
 
-// ==========================
-// VOTE
-// ==========================
+socket.on("notJoined", () => {
 
-document.getElementById("voteBtn").addEventListener("click", () => {
-
-    const selected = document.querySelector(
-        'input[name="language"]:checked'
-    );
-
-    if (selected) {
-
-        socket.emit("vote", selected.value);
-
-    } else {
-
-        alert("Please select one option.");
-
-    }
+    alert("Please join a meeting first.");
 
 });
 
-
-// ==========================
-// LIVE RESULTS
-// ==========================
-
-socket.on("voteUpdate", (votes) => {
-
-    console.log("LIVE RESULTS RECEIVED:", votes);
-
-    const resultsDiv = document.getElementById("results");
-
-    resultsDiv.innerHTML = "";
-
-    for (let option in votes) {
-
-        resultsDiv.innerHTML += `
-            <p>${option} : ${votes[option]}</p>
-        `;
-
-    }
-
-});
-
-
-// ==========================
-// CURRENT POLL
-// ==========================
 
 socket.on("currentPoll", (poll) => {
 
-    if (!poll) {
-        return;
-    }
+    console.log(
+        "CURRENT POLL RECEIVED:",
+        poll
+    );
 
-    document.getElementById("question").innerText = poll.question;
+    question.innerText = poll.question;
 
-    const optionsDiv = document.getElementById("options");
+    options.innerHTML = "";
 
-    optionsDiv.innerHTML = "";
+    selectedOption = null;
 
     poll.options.forEach((option) => {
 
-        optionsDiv.innerHTML += `
-            <input type="radio" name="language" value="${option}">
-            ${option}
-            <br><br>
-        `;
+        const label = document.createElement("label");
+
+        const radio = document.createElement("input");
+
+        radio.type = "radio";
+
+        radio.name = "pollOption";
+
+        radio.value = option;
+
+        radio.addEventListener("change", () => {
+
+            selectedOption = option;
+
+        });
+
+        label.appendChild(radio);
+
+        label.appendChild(
+            document.createTextNode(" " + option)
+        );
+
+        const div = document.createElement("div");
+
+        div.appendChild(label);
+
+        options.appendChild(div);
 
     });
 
 });
 
 
-// ==========================
-// ALREADY VOTED
-// ==========================
+socket.on("voteUpdate", (votes) => {
 
-socket.on("alreadyVoted", () => {
+    console.log(
+        "LIVE RESULTS RECEIVED:",
+        votes
+    );
 
-    alert("You have already voted!");
+    results.innerHTML = "";
+
+    const voteKeys = Object.keys(votes);
+
+    if (voteKeys.length === 0) {
+
+        results.innerHTML =
+            "<p>No poll results yet.</p>";
+
+        return;
+
+    }
+
+    voteKeys.forEach((option) => {
+
+        const result = document.createElement("p");
+
+        result.innerText =
+            option + " : " + votes[option];
+
+        results.appendChild(result);
+
+    });
 
 });
 
 
-// ==========================
-// ROLE SELECTION
-// ==========================
+voteBtn.addEventListener("click", () => {
 
-const roleSelect = document.getElementById("role");
-const regNoInput = document.getElementById("regNo");
+    if (!selectedOption) {
 
-roleSelect.addEventListener("change", () => {
+        alert("Please select an option.");
 
-    if (roleSelect.value === "guest") {
+        return;
 
-        regNoInput.style.display = "none";
-        regNoInput.value = "";
+    }
 
-    } else {
+    console.log(
+        "Voting for:",
+        selectedOption
+    );
 
-        regNoInput.style.display = "inline-block";
+    socket.emit(
+        "vote",
+        selectedOption
+    );
+
+});
+
+
+socket.on("alreadyVoted", () => {
+
+    alert("You have already voted in this poll.");
+
+});
+
+
+socket.on("invalidOption", () => {
+
+    alert("Invalid poll option.");
+
+});
+
+
+socket.on("noPoll", () => {
+
+    alert("There is no active poll.");
+
+});
+
+
+socket.on("chatHistory", (messages) => {
+
+    console.log(
+        "Chat history received:",
+        messages
+    );
+
+    chatMessages.innerHTML = "";
+
+    messages.forEach((message) => {
+
+        displayMessage(message);
+
+    });
+
+});
+
+
+socket.on("newMessage", (message) => {
+
+    console.log(
+        "New message received:",
+        message
+    );
+
+    displayMessage(message);
+
+});
+
+
+function displayMessage(message) {
+
+    const messageDiv =
+        document.createElement("div");
+
+    messageDiv.innerHTML = `
+
+        <p>
+            <strong>${escapeHtml(message.name)}</strong>:
+            ${escapeHtml(message.text)}
+            <small>(${message.time})</small>
+        </p>
+
+    `;
+
+    chatMessages.appendChild(messageDiv);
+
+    chatMessages.scrollTop =
+        chatMessages.scrollHeight;
+
+}
+
+
+sendMessageBtn.addEventListener("click", sendMessage);
+
+
+messageInput.addEventListener("keydown", (event) => {
+
+    if (event.key === "Enter") {
+
+        sendMessage();
 
     }
 
 });
+
+
+function sendMessage() {
+
+    const text =
+        messageInput.value.trim();
+
+    if (text === "") {
+
+        return;
+
+    }
+
+    socket.emit(
+        "sendMessage",
+        text
+    );
+
+    messageInput.value = "";
+
+}
+
+
+socket.on("messageSaveError", (message) => {
+
+    alert(message);
+
+});
+
+
+socket.on("notAuthorized", () => {
+
+    alert(
+        "You are not authorized to perform this action."
+    );
+
+});
+
+
+socket.on("invalidPoll", () => {
+
+    alert(
+        "Please enter a valid question and at least two options."
+    );
+
+});
+
+
+function escapeHtml(text) {
+
+    const div =
+        document.createElement("div");
+
+    div.textContent = text;
+
+    return div.innerHTML;
+
+}

@@ -8,26 +8,42 @@
 
 <body>
 
-    <!-- Join Meeting Screen -->
     <div id="joinScreen">
 
         <h1>Join Meeting</h1>
-        <input id="meetingId" placeholder="Enter Meeting ID">
 
-<br><br>
+        <input
+            id="meetingId"
+            placeholder="Enter Meeting ID"
+        >
 
-        <input id="name" placeholder="Enter Your Name">
+        <br><br>
+
+        <input
+            id="name"
+            placeholder="Enter Your Name"
+        >
 
         <br><br>
 
         <select id="role">
-            <option value="student">Student</option>
-            <option value="guest">Guest</option>
+
+            <option value="student">
+                Student
+            </option>
+
+            <option value="guest">
+                Guest
+            </option>
+
         </select>
 
         <br><br>
 
-        <input id="regNo" placeholder="Registration Number">
+        <input
+            id="regNo"
+            placeholder="Registration Number"
+        >
 
         <br><br>
 
@@ -37,26 +53,63 @@
 
     </div>
 
-    <!-- Poll Screen -->
-    <div id="pollScreen" style="display:none;">
+
+    <div
+        id="pollScreen"
+        style="display:none;"
+    >
 
         <h1>SQAC Live Poll</h1>
+
 
         <h2 id="question"></h2>
 
         <div id="options"></div>
 
-        <button id="voteBtn">Vote</button>
+        <button id="voteBtn">
+            Vote
+        </button>
+
 
         <hr>
 
+
         <h2>Live Results</h2>
 
-        <div id="results"></div>
+        <div id="results">
+        </div>
+
+
+        <hr>
+
+
+        <h2>Meeting Discussion</h2>
+
+        <div id="chatBox">
+
+            <div id="chatMessages">
+            </div>
+
+            <div id="chatInputArea">
+
+                <input
+                    id="messageInput"
+                    placeholder="Type your message..."
+                >
+
+                <button id="sendMessageBtn">
+                    Send
+                </button>
+
+            </div>
+
+        </div>
 
     </div>
 
+
     <script src="/socket.io/socket.io.js"></script>
+
     <script src="script.js"></script>
 
 </body>

@@ -2,182 +2,505 @@
 <html>
 
 <head>
+
     <title>Admin Panel</title>
+
 </head>
 
 <body>
 
     <h1>Admin Panel</h1>
+
     <button id="createMeeting">
-    Create Meeting
-</button>
+        Create Meeting
+    </button>
 
-<h2 id="meetingInfo"></h2>
+    <h2 id="meetingInfo">
+        No meeting created yet.
+    </h2>
 
-<br><br>
+    <hr>
 
-    <input id="question" placeholder="Enter Question">
+    <h2>Create Poll</h2>
+
+    <input
+        id="question"
+        placeholder="Enter Question"
+    >
 
     <br><br>
 
-    <input id="option1" placeholder="Option 1">
+    <input
+        id="option1"
+        placeholder="Option 1"
+    >
 
     <br><br>
 
-    <input id="option2" placeholder="Option 2">
+    <input
+        id="option2"
+        placeholder="Option 2"
+    >
 
     <br><br>
 
-    <input id="option3" placeholder="Option 3">
+    <input
+        id="option3"
+        placeholder="Option 3"
+    >
 
     <br><br>
 
     <button id="createPoll">
         Create Poll
     </button>
+
     <hr>
 
-<h2>AI Meeting Summary</h2>
+    <h2>Meeting Transcript</h2>
 
-<textarea
-    id="transcript"
-    rows="10"
-    cols="60"
-    placeholder="Paste the meeting transcript here..."></textarea>
+    <div id="meetingTranscript">
 
-<br><br>
+        No messages yet.
 
-<button id="generateSummary">
-    Generate AI Summary
-</button>
+    </div>
 
-<div id="summaryResult"></div>
+    <br>
+
+    <button id="generateSummary">
+        Generate AI Summary
+    </button>
+
+    <div id="summaryResult"></div>
+
 
     <script src="/socket.io/socket.io.js"></script>
 
     <script>
 
         const socket = io();
-        
 
-document.getElementById("createMeeting").addEventListener("click", () => {
 
-    socket.emit("createMeeting");
+        socket.on("connect", () => {
 
-});
-
-socket.on("meetingCreated", (meetingId) => {
-
-    document.getElementById("meetingInfo").innerText =
-        "Meeting ID: " + meetingId;
-
-});
-
-        document.getElementById("createPoll").addEventListener("click", () => {
-
-            const poll = {
-
-                question: document.getElementById("question").value,
-
-                options: [
-
-                    document.getElementById("option1").value,
-
-                    document.getElementById("option2").value,
-
-                    document.getElementById("option3").value
-
-                ]
-
-            };
-
-            socket.emit("createPoll", poll);
+            console.log(
+                "Admin connected to Socket.IO:",
+                socket.id
+            );
 
         });
-        document.getElementById("generateSummary").addEventListener("click", () => {
 
-    const transcript =
-        document.getElementById("transcript").value.trim();
 
-    if (transcript === "") {
+        socket.on("connect_error", (error) => {
 
-        alert("Please enter the meeting transcript.");
+            console.error(
+                "Socket connection error:",
+                error
+            );
 
-        return;
+        });
 
-    }
 
-    socket.emit(
-        "generateSummary",
-        transcript
-    );
+        document
+            .getElementById("createMeeting")
+            .addEventListener("click", () => {
 
-});
-socket.on("summaryGenerated", (summary) => {
+                console.log(
+                    "Create Meeting button clicked"
+                );
 
-    console.log("AI SUMMARY RECEIVED:", summary);
+                socket.emit(
+                    "createMeeting"
+                );
 
-    const result = document.getElementById("summaryResult");
+            });
 
-    result.innerHTML = `
-        <hr>
 
-        <h2>AI Summary</h2>
-        <p>${summary.summary || "No summary available."}</p>
+        socket.on("meetingCreated", (meetingId) => {
 
-        <h3>Key Points</h3>
-        <ul>
-            ${(summary.keyPoints || [])
-                .map(point => `<li>${point}</li>`)
-                .join("")}
-        </ul>
+            console.log(
+                "MEETING CREATED:",
+                meetingId
+            );
 
-        <h3>Decisions</h3>
-        <ul>
-            ${(summary.decisions || [])
-                .map(decision => `<li>${decision}</li>`)
-                .join("")}
-        </ul>
+            document
+                .getElementById("meetingInfo")
+                .innerText =
+                    "Meeting ID: " + meetingId;
 
-        <h3>Action Items</h3>
-        <ul>
-            ${(summary.actionItems || [])
-                .map(item => `
-                    <li>
-                        <strong>${item.person || "Team"}</strong>:
-                        ${item.task || ""}
-                        (Deadline: ${item.deadline || "None"})
-                    </li>
-                `)
-                .join("")}
-        </ul>
+        });
 
-        <h3>Unresolved Issues</h3>
-        <ul>
-            ${(summary.unresolvedIssues || [])
-                .map(issue => `<li>${issue}</li>`)
-                .join("")}
-        </ul>
-    `;
 
-});
-socket.on("summaryError", (message) => {
+        socket.on("meetingCreationError", () => {
 
-    alert(message);
+            console.error(
+                "Meeting creation failed"
+            );
 
-});
+            alert(
+                "Failed to create meeting."
+            );
 
-socket.on("emptyTranscript", () => {
+        });
 
-    alert("Please enter a meeting transcript.");
 
-});
+        document
+            .getElementById("createPoll")
+            .addEventListener("click", () => {
 
-socket.on("notAuthorized", () => {
+                const question =
+                    document
+                        .getElementById("question")
+                        .value
+                        .trim();
 
-    alert("Only the meeting admin can generate the summary.");
+                const option1 =
+                    document
+                        .getElementById("option1")
+                        .value
+                        .trim();
 
-});
+                const option2 =
+                    document
+                        .getElementById("option2")
+                        .value
+                        .trim();
+
+                const option3 =
+                    document
+                        .getElementById("option3")
+                        .value
+                        .trim();
+
+
+                if (question === "") {
+
+                    alert(
+                        "Please enter a question."
+                    );
+
+                    return;
+
+                }
+
+
+                const options = [
+                    option1,
+                    option2,
+                    option3
+                ].filter(
+                    option => option !== ""
+                );
+
+
+                if (options.length < 2) {
+
+                    alert(
+                        "Please enter at least two options."
+                    );
+
+                    return;
+
+                }
+
+
+                const poll = {
+
+                    question: question,
+
+                    options: options
+
+                };
+
+
+                console.log(
+                    "Creating poll:",
+                    poll
+                );
+
+
+                socket.emit(
+                    "createPoll",
+                    poll
+                );
+
+            });
+
+
+        socket.on("invalidPoll", () => {
+
+            alert(
+                "Please enter a valid question and at least two options."
+            );
+
+        });
+
+
+        socket.on("chatHistory", (messages) => {
+
+            console.log(
+                "Chat history received:",
+                messages
+            );
+
+
+            const transcript =
+                document.getElementById(
+                    "meetingTranscript"
+                );
+
+
+            transcript.innerHTML = "";
+
+
+            if (
+                !messages ||
+                messages.length === 0
+            ) {
+
+                transcript.innerText =
+                    "No messages yet.";
+
+                return;
+
+            }
+
+
+            messages.forEach((message) => {
+
+                addMessageToTranscript(
+                    message
+                );
+
+            });
+
+        });
+
+
+        socket.on("newMessage", (message) => {
+
+            console.log(
+                "New message received:",
+                message
+            );
+
+
+            const transcript =
+                document.getElementById(
+                    "meetingTranscript"
+                );
+
+
+            if (
+                transcript.innerText ===
+                "No messages yet."
+            ) {
+
+                transcript.innerHTML = "";
+
+            }
+
+
+            addMessageToTranscript(
+                message
+            );
+
+        });
+
+
+        function addMessageToTranscript(message) {
+
+            const transcript =
+                document.getElementById(
+                    "meetingTranscript"
+                );
+
+
+            const messageElement =
+                document.createElement("p");
+
+
+            const name =
+                document.createElement("strong");
+
+            name.innerText =
+                message.name;
+
+
+            const text =
+                document.createTextNode(
+                    ": " + message.text + " "
+                );
+
+
+            const time =
+                document.createElement("small");
+
+            time.innerText =
+                "(" + message.time + ")";
+
+
+            messageElement.appendChild(name);
+
+            messageElement.appendChild(text);
+
+            messageElement.appendChild(time);
+
+
+            transcript.appendChild(
+                messageElement
+            );
+
+        }
+
+
+        document
+            .getElementById("generateSummary")
+            .addEventListener("click", () => {
+
+                console.log(
+                    "Requesting AI summary..."
+                );
+
+
+                socket.emit(
+                    "generateSummary"
+                );
+
+            });
+
+
+        socket.on("summaryGenerated", (summary) => {
+
+            console.log(
+                "AI SUMMARY RECEIVED:",
+                summary
+            );
+
+
+            const result =
+                document.getElementById(
+                    "summaryResult"
+                );
+
+
+            result.innerHTML = `
+
+                <hr>
+
+                <h2>AI Summary</h2>
+
+                <p>
+                    ${summary.summary || "No summary available."}
+                </p>
+
+
+                <h3>Key Points</h3>
+
+                <ul>
+
+                    ${(summary.keyPoints || [])
+                        .map(
+                            point =>
+                                `<li>${point}</li>`
+                        )
+                        .join("")}
+
+                </ul>
+
+
+                <h3>Decisions</h3>
+
+                <ul>
+
+                    ${(summary.decisions || [])
+                        .map(
+                            decision =>
+                                `<li>${decision}</li>`
+                        )
+                        .join("")}
+
+                </ul>
+
+
+                <h3>Action Items</h3>
+
+                <ul>
+
+                    ${(summary.actionItems || [])
+                        .map(
+                            item => `
+
+                                <li>
+
+                                    <strong>
+                                        ${item.person || "Team"}
+                                    </strong>:
+
+                                    ${item.task || ""}
+
+                                    (Deadline:
+                                    ${item.deadline || "None"})
+
+                                </li>
+
+                            `
+                        )
+                        .join("")}
+
+                </ul>
+
+
+                <h3>Unresolved Issues</h3>
+
+                <ul>
+
+                    ${(summary.unresolvedIssues || [])
+                        .map(
+                            issue =>
+                                `<li>${issue}</li>`
+                        )
+                        .join("")}
+
+                </ul>
+
+            `;
+
+        });
+
+
+        socket.on("summaryError", (message) => {
+
+            alert(message);
+
+        });
+
+
+        socket.on("emptyTranscript", () => {
+
+            alert(
+                "There are no messages in this meeting to summarize."
+            );
+
+        });
+
+
+        socket.on("notAuthorized", () => {
+
+            alert(
+                "Only the meeting admin can perform this action."
+            );
+
+        });
+
+
+        socket.on("meetingNotFound", () => {
+
+            alert(
+                "Meeting not found."
+            );
+
+        });
 
     </script>
 
