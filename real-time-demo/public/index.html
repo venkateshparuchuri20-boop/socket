@@ -1,59 +1,383 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>SQAC Live Poll</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SQAC Live Meeting</title>
+
     <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
 
-    <!-- Join Meeting Screen -->
-    <div id="joinScreen">
+    <!-- ==============================
+         JOIN MEETING SCREEN
+    =============================== -->
 
-        <h1>Join Meeting</h1>
+    <div id="joinScreen" class="join-container">
 
-        <input id="name" placeholder="Enter Your Name">
+        <div class="brand">
+            <div class="brand-logo">S</div>
 
-        <br><br>
+            <div>
+                <h1>SQAC</h1>
+                <p>Smart Meeting Platform</p>
+            </div>
+        </div>
 
-        <select id="role">
-            <option value="student">Student</option>
-            <option value="guest">Guest</option>
-        </select>
+        <div class="join-card">
 
-        <br><br>
+            <div class="card-header">
+                <span class="live-dot"></span>
+                LIVE MEETING
+            </div>
 
-        <input id="regNo" placeholder="Registration Number">
+            <h2>Join Meeting</h2>
 
-        <br><br>
+            <p class="subtitle">
+                Join the live meeting to participate in
+                discussions and polls.
+            </p>
 
-        <button id="joinBtn">
-            Join Meeting
-        </button>
+            <label for="name">Your Name</label>
+
+            <input
+                id="name"
+                type="text"
+                placeholder="Enter your name"
+            >
+
+            <label for="role">Role</label>
+
+            <select id="role">
+
+                <option value="student">
+                    Student
+                </option>
+
+                <option value="guest">
+                    Guest
+                </option>
+
+            </select>
+
+            <label for="regNo">
+                Registration Number
+            </label>
+
+            <input
+                id="regNo"
+                type="text"
+                placeholder="Enter registration number"
+            >
+
+            <button id="joinBtn" class="primary-btn">
+                Join Meeting
+            </button>
+
+            <div class="features">
+
+                <div class="feature">
+                    <span>💬</span>
+                    Live Discussion
+                </div>
+
+                <div class="feature">
+                    <span>📊</span>
+                    Live Polls
+                </div>
+
+                <div class="feature">
+                    <span>🤖</span>
+                    AI Summary
+                </div>
+
+            </div>
+
+        </div>
+
+        <p class="footer-text">
+            SQAC • Smart Quality Assessment Cell
+        </p>
 
     </div>
 
-    <!-- Poll Screen -->
-    <div id="pollScreen" style="display:none;">
 
-        <h1>SQAC Live Poll</h1>
+    <!-- ==============================
+         MEETING SCREEN
+    =============================== -->
 
-        <h2 id="question"></h2>
+    <div
+        id="pollScreen"
+        class="meeting-page"
+        style="display:none;"
+    >
 
-        <div id="options"></div>
+        <!-- HEADER -->
 
-        <button id="voteBtn">Vote</button>
+        <header class="meeting-header">
 
-        <hr>
+            <div class="brand small-brand">
 
-        <h2>Live Results</h2>
+                <div class="brand-logo">
+                    S
+                </div>
 
-        <div id="results"></div>
+                <div>
+                    <h1>SQAC</h1>
+                    <p>Smart Meeting Platform</p>
+                </div>
+
+            </div>
+
+            <div class="meeting-info">
+
+                <div class="meeting-id">
+                    MEET004
+                </div>
+
+                <div class="live-status">
+
+                    <span class="live-dot"></span>
+
+                    LIVE
+
+                </div>
+
+            </div>
+
+        </header>
+
+
+        <!-- ==============================
+             MAIN MEETING AREA
+        =============================== -->
+
+        <main class="meeting-content">
+
+            <!-- ==========================
+                 LIVE DISCUSSION
+            =========================== -->
+
+            <section class="discussion-card">
+
+                <div class="section-header">
+
+                    <div>
+                        <h2>Live Discussion</h2>
+
+                        <p>
+                            Meeting conversation
+                        </p>
+                    </div>
+
+                    <span class="participant-count">
+                        ● Live
+                    </span>
+
+                </div>
+
+
+                <!-- CHAT MESSAGES -->
+
+                <div
+                    id="messages"
+                    class="messages"
+                >
+
+                    <div class="message">
+
+                        <div class="avatar">
+                            S
+                        </div>
+
+                        <div class="message-content">
+
+                            <strong>
+                                SQAC
+                            </strong>
+
+                            <p>
+                                Welcome to the meeting!
+                            </p>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+
+                <!-- MESSAGE INPUT -->
+
+                <div class="message-input">
+
+                    <input
+                        id="messageInput"
+                        type="text"
+                        placeholder="Type a message..."
+                    >
+
+                    <button
+                        id="sendMessageBtn"
+                        type="button"
+                    >
+                        ➤
+                    </button>
+
+                </div>
+
+            </section>
+
+
+            <!-- ==========================
+                 LIVE POLL
+            =========================== -->
+
+            <section class="poll-card">
+
+                <span class="live-badge">
+                    ● LIVE POLL
+                </span>
+
+                <h2 id="question">
+                    Waiting for poll...
+                </h2>
+
+
+                <!-- POLL OPTIONS -->
+
+                <div
+                    id="options"
+                    class="poll-options"
+                ></div>
+
+
+                <!-- VOTE BUTTON -->
+
+                <button
+                    id="voteBtn"
+                    class="vote-btn"
+                >
+                    Vote
+                </button>
+
+
+                <!-- RESULTS -->
+
+                <div class="results-section">
+
+                    <h3>
+                        Live Results
+                    </h3>
+
+                    <div id="results"></div>
+
+                </div>
+
+            </section>
+
+        </main>
+
+
+        <!-- ==============================
+             AI MEETING ASSISTANT
+        =============================== -->
+
+        <section class="ai-summary-card">
+
+            <div class="ai-icon">
+                🤖
+            </div>
+
+            <div class="ai-summary-content">
+
+                <h2>
+                    AI Meeting Assistant
+                </h2>
+
+                <p>
+                    Meeting discussion can be summarized
+                    using AI after the meeting.
+                </p>
+
+            </div>
+
+            <button
+                id="generateSummaryBtn"
+                class="summary-btn"
+            >
+                Generate Summary
+            </button>
+
+        </section>
+
+
+        <!-- AI SUMMARY RESULT -->
+
+        <section
+            id="summaryContainer"
+            class="summary-container"
+            style="display:none;"
+        >
+
+            <div class="summary-section">
+
+                <h3>Summary</h3>
+
+                <p id="summaryText"></p>
+
+            </div>
+
+
+            <div class="summary-section">
+
+                <h3>Key Points</h3>
+
+                <ul id="keyPoints"></ul>
+
+            </div>
+
+
+            <div class="summary-section">
+
+                <h3>Decisions</h3>
+
+                <ul id="decisions"></ul>
+
+            </div>
+
+
+            <div class="summary-section">
+
+                <h3>Action Items</h3>
+
+                <div id="actionItems"></div>
+
+            </div>
+
+
+            <div class="summary-section">
+
+                <h3>Unresolved Issues</h3>
+
+                <ul id="unresolvedIssues"></ul>
+
+            </div>
+
+        </section>
 
     </div>
+
+
+    <!-- ==============================
+         SOCKET.IO
+    =============================== -->
 
     <script src="/socket.io/socket.io.js"></script>
+
     <script src="script.js"></script>
 
 </body>
