@@ -1,349 +1,790 @@
+// =====================================================
+// SOCKET.IO CONNECTION
+// =====================================================
+
 const socket = io();
 
-let selectedOption = null;
 
-const joinScreen = document.getElementById("joinScreen");
-const pollScreen = document.getElementById("pollScreen");
-
-const meetingIdInput = document.getElementById("meetingId");
-const nameInput = document.getElementById("name");
-const roleInput = document.getElementById("role");
-const regNoInput = document.getElementById("regNo");
+// =====================================================
+// JOIN MEETING
+// =====================================================
 
 const joinBtn = document.getElementById("joinBtn");
 
-const question = document.getElementById("question");
-const options = document.getElementById("options");
-const results = document.getElementById("results");
+if (joinBtn) {
 
-const voteBtn = document.getElementById("voteBtn");
+    joinBtn.addEventListener("click", () => {
 
-const chatMessages = document.getElementById("chatMessages");
-const messageInput = document.getElementById("messageInput");
-const sendMessageBtn = document.getElementById("sendMessageBtn");
+        const name =
+            document.getElementById("name").value.trim();
 
+        const role =
+            document.getElementById("role").value;
 
-joinBtn.addEventListener("click", () => {
-
-    const meetingId = meetingIdInput.value.trim();
-    const name = nameInput.value.trim();
-    const role = roleInput.value;
-    const regNo = regNoInput.value.trim();
-
-    if (meetingId === "") {
-
-        alert("Please enter Meeting ID");
-        return;
-
-    }
-
-    if (name === "") {
-
-        alert("Please enter your name");
-        return;
-
-    }
-
-    if (role === "student" && regNo === "") {
-
-        alert("Please enter Registration Number");
-        return;
-
-    }
-
-    const user = {
-
-        meetingId: meetingId,
-
-        name: name,
-
-        role: role,
-
-        regNo: regNo
-
-    };
-
-    console.log("Joining meeting:", user);
-
-    socket.emit(
-        "joinMeeting",
-        user
-    );
-
-});
+        const regNo =
+            document.getElementById("regNo").value.trim();
 
 
-socket.on("joinedSuccessfully", () => {
+        // Validate name
 
-    console.log("Successfully joined meeting");
+        if (name === "") {
 
-    joinScreen.style.display = "none";
+            alert("Please enter your name.");
 
-    pollScreen.style.display = "block";
-
-});
-
-
-socket.on("meetingNotFound", () => {
-
-    alert("Meeting not found. Please check the Meeting ID.");
-
-});
+            return;
+        }
 
 
-socket.on("notJoined", () => {
+        // Student must enter registration number
 
-    alert("Please join a meeting first.");
+        if (role === "student" && regNo === "") {
 
-});
+            alert(
+                "Please enter your Registration Number."
+            );
+
+            return;
+        }
 
 
-socket.on("currentPoll", (poll) => {
+        // Send user information to server
 
-    console.log(
-        "CURRENT POLL RECEIVED:",
-        poll
-    );
+        socket.emit("joinMeeting", {
 
-    question.innerText = poll.question;
-
-    options.innerHTML = "";
-
-    selectedOption = null;
-
-    poll.options.forEach((option) => {
-
-        const label = document.createElement("label");
-
-        const radio = document.createElement("input");
-
-        radio.type = "radio";
-
-        radio.name = "pollOption";
-
-        radio.value = option;
-
-        radio.addEventListener("change", () => {
-
-            selectedOption = option;
+            name: name,
+            role: role,
+            regNo: regNo
 
         });
 
-        label.appendChild(radio);
 
-        label.appendChild(
-            document.createTextNode(" " + option)
+        console.log(
+            "Joining meeting...",
+            name
         );
 
-        const div = document.createElement("div");
-
-        div.appendChild(label);
-
-        options.appendChild(div);
-
     });
-
-});
-
-
-socket.on("voteUpdate", (votes) => {
-
-    console.log(
-        "LIVE RESULTS RECEIVED:",
-        votes
-    );
-
-    results.innerHTML = "";
-
-    const voteKeys = Object.keys(votes);
-
-    if (voteKeys.length === 0) {
-
-        results.innerHTML =
-            "<p>No poll results yet.</p>";
-
-        return;
-
-    }
-
-    voteKeys.forEach((option) => {
-
-        const result = document.createElement("p");
-
-        result.innerText =
-            option + " : " + votes[option];
-
-        results.appendChild(result);
-
-    });
-
-});
-
-
-voteBtn.addEventListener("click", () => {
-
-    if (!selectedOption) {
-
-        alert("Please select an option.");
-
-        return;
-
-    }
-
-    console.log(
-        "Voting for:",
-        selectedOption
-    );
-
-    socket.emit(
-        "vote",
-        selectedOption
-    );
-
-});
-
-
-socket.on("alreadyVoted", () => {
-
-    alert("You have already voted in this poll.");
-
-});
-
-
-socket.on("invalidOption", () => {
-
-    alert("Invalid poll option.");
-
-});
-
-
-socket.on("noPoll", () => {
-
-    alert("There is no active poll.");
-
-});
-
-
-socket.on("chatHistory", (messages) => {
-
-    console.log(
-        "Chat history received:",
-        messages
-    );
-
-    chatMessages.innerHTML = "";
-
-    messages.forEach((message) => {
-
-        displayMessage(message);
-
-    });
-
-});
-
-
-socket.on("newMessage", (message) => {
-
-    console.log(
-        "New message received:",
-        message
-    );
-
-    displayMessage(message);
-
-});
-
-
-function displayMessage(message) {
-
-    const messageDiv =
-        document.createElement("div");
-
-    messageDiv.innerHTML = `
-
-        <p>
-            <strong>${escapeHtml(message.name)}</strong>:
-            ${escapeHtml(message.text)}
-            <small>(${message.time})</small>
-        </p>
-
-    `;
-
-    chatMessages.appendChild(messageDiv);
-
-    chatMessages.scrollTop =
-        chatMessages.scrollHeight;
 
 }
 
 
-sendMessageBtn.addEventListener("click", sendMessage);
+// =====================================================
+// SUCCESSFULLY JOINED
+// =====================================================
+
+socket.on("joinedSuccessfully", () => {
+
+    console.log(
+        "Successfully joined meeting!"
+    );
 
 
-messageInput.addEventListener("keydown", (event) => {
+    const joinScreen =
+        document.getElementById("joinScreen");
 
-    if (event.key === "Enter") {
+    const pollScreen =
+        document.getElementById("pollScreen");
 
-        sendMessage();
+
+    if (joinScreen) {
+
+        joinScreen.style.display = "none";
+
+    }
+
+
+    if (pollScreen) {
+
+        pollScreen.style.display = "block";
 
     }
 
 });
 
 
-function sendMessage() {
+// =====================================================
+// CONNECTION STATUS
+// =====================================================
 
-    const text =
-        messageInput.value.trim();
+socket.on("connect", () => {
 
-    if (text === "") {
+    console.log(
+        "Connected to Socket.IO server."
+    );
+
+});
+
+
+socket.on("disconnect", () => {
+
+    console.log(
+        "Disconnected from Socket.IO server."
+    );
+
+});
+
+
+// =====================================================
+// RECEIVE CURRENT POLL
+// =====================================================
+
+socket.on("currentPoll", (poll) => {
+
+    console.log(
+        "Poll received:",
+        poll
+    );
+
+
+    const question =
+        document.getElementById("question");
+
+    const optionsDiv =
+        document.getElementById("options");
+
+
+    if (!question || !optionsDiv) {
 
         return;
 
     }
 
-    socket.emit(
-        "sendMessage",
-        text
+
+    // Display question
+
+    question.innerText =
+        poll.question;
+
+
+    // Clear old options
+
+    optionsDiv.innerHTML = "";
+
+
+    // Create radio buttons
+
+    poll.options.forEach((option) => {
+
+        const label =
+            document.createElement("label");
+
+
+        label.innerHTML = `
+
+            <input
+                type="radio"
+                name="language"
+                value="${option}"
+            >
+
+            <span>${option}</span>
+
+        `;
+
+
+        optionsDiv.appendChild(label);
+
+    });
+
+});
+
+
+// =====================================================
+// VOTE
+// =====================================================
+
+const voteBtn =
+    document.getElementById("voteBtn");
+
+
+if (voteBtn) {
+
+    voteBtn.addEventListener(
+        "click",
+        () => {
+
+
+            const selected =
+                document.querySelector(
+                    'input[name="language"]:checked'
+                );
+
+
+            // No option selected
+
+            if (!selected) {
+
+                alert(
+                    "Please select one option."
+                );
+
+                return;
+
+            }
+
+
+            // Send vote to server
+
+            socket.emit(
+                "vote",
+                selected.value
+            );
+
+
+            console.log(
+                "Vote submitted:",
+                selected.value
+            );
+
+        }
     );
+
+}
+
+
+// =====================================================
+// LIVE VOTE RESULTS
+// =====================================================
+
+socket.on("voteUpdate", (votes) => {
+
+    console.log(
+        "Vote results:",
+        votes
+    );
+
+
+    const resultsDiv =
+        document.getElementById("results");
+
+
+    if (!resultsDiv) {
+
+        return;
+
+    }
+
+
+    resultsDiv.innerHTML = "";
+
+
+    // Calculate total votes
+
+    let totalVotes = 0;
+
+
+    for (const option in votes) {
+
+        totalVotes += votes[option];
+
+    }
+
+
+    // Display every option
+
+    for (const option in votes) {
+
+
+        const count =
+            votes[option];
+
+
+        let percentage = 0;
+
+
+        if (totalVotes > 0) {
+
+            percentage =
+                Math.round(
+                    (count / totalVotes) * 100
+                );
+
+        }
+
+
+        const resultRow =
+            document.createElement("div");
+
+
+        resultRow.className =
+            "result-row";
+
+
+        resultRow.innerHTML = `
+
+            <div class="result-info">
+
+                <span>
+                    ${option}
+                </span>
+
+                <span>
+                    ${count} (${percentage}%)
+                </span>
+
+            </div>
+
+            <div class="result-bar">
+
+                <div
+                    class="result-fill"
+                    style="width:${percentage}%"
+                ></div>
+
+            </div>
+
+        `;
+
+
+        resultsDiv.appendChild(
+            resultRow
+        );
+
+    }
+
+});
+
+
+// =====================================================
+// ALREADY VOTED
+// =====================================================
+
+socket.on("alreadyVoted", () => {
+
+    alert(
+        "You have already voted!"
+    );
+
+});
+
+
+// =====================================================
+// LIVE DISCUSSION - FRONTEND
+// =====================================================
+
+const messageInput =
+    document.getElementById("messageInput");
+
+const sendMessageBtn =
+    document.getElementById("sendMessageBtn");
+
+const messagesDiv =
+    document.getElementById("messages");
+
+
+// Send message
+
+function sendMessage() {
+
+    if (!messageInput) {
+
+        return;
+
+    }
+
+
+    const message =
+        messageInput.value.trim();
+
+
+    if (message === "") {
+
+        return;
+
+    }
+
+
+    /*
+     * The backend will handle this event
+     * when the real-time discussion feature
+     * is connected.
+     */
+
+    socket.emit("sendMessage", {
+
+        message: message
+
+    });
+
 
     messageInput.value = "";
 
 }
 
 
-socket.on("messageSaveError", (message) => {
+// Button click
 
-    alert(message);
+if (sendMessageBtn) {
 
-});
+    sendMessageBtn.addEventListener(
+        "click",
+        sendMessage
+    );
+
+}
 
 
-socket.on("notAuthorized", () => {
+// Press Enter
 
-    alert(
-        "You are not authorized to perform this action."
+if (messageInput) {
+
+    messageInput.addEventListener(
+        "keydown",
+        (event) => {
+
+            if (event.key === "Enter") {
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+}
+
+
+// Receive message from backend
+
+socket.on("receiveMessage", (data) => {
+
+    addMessage(
+        data.name || "Participant",
+        data.message
     );
 
 });
 
 
-socket.on("invalidPoll", () => {
+// Display message
 
-    alert(
-        "Please enter a valid question and at least two options."
-    );
+function addMessage(name, message) {
 
-});
+    if (!messagesDiv) {
+
+        return;
+
+    }
 
 
-function escapeHtml(text) {
-
-    const div =
+    const messageDiv =
         document.createElement("div");
 
-    div.textContent = text;
 
-    return div.innerHTML;
+    messageDiv.className =
+        "message";
+
+
+    const firstLetter =
+        name.charAt(0).toUpperCase();
+
+
+    messageDiv.innerHTML = `
+
+        <div class="avatar">
+            ${firstLetter}
+        </div>
+
+        <div class="message-content">
+
+            <strong>
+                ${name}
+            </strong>
+
+            <p>
+                ${message}
+            </p>
+
+        </div>
+
+    `;
+
+
+    messagesDiv.appendChild(
+        messageDiv
+    );
+
+
+    // Automatically scroll to latest message
+
+    messagesDiv.scrollTop =
+        messagesDiv.scrollHeight;
+
+}
+
+
+// =====================================================
+// AI SUMMARY EVENTS
+// =====================================================
+
+const generateSummaryBtn =
+    document.getElementById(
+        "generateSummaryBtn"
+    );
+
+
+/*
+ * The actual AI summary generation is
+ * handled by the backend.
+ *
+ * Frontend only sends the request and
+ * displays the response.
+ */
+
+if (generateSummaryBtn) {
+
+    generateSummaryBtn.addEventListener(
+        "click",
+        () => {
+
+            console.log(
+                "Requesting AI meeting summary..."
+            );
+
+            socket.emit(
+                "generateSummary"
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// AI SUMMARY GENERATED
+// =====================================================
+
+socket.on("summaryGenerated", (summary) => {
+
+    console.log(
+        "AI Summary received:",
+        summary
+    );
+
+
+    displaySummary(summary);
+
+});
+
+
+// =====================================================
+// EMPTY TRANSCRIPT
+// =====================================================
+
+socket.on("emptyTranscript", () => {
+
+    alert(
+        "No meeting discussion is available to summarize."
+    );
+
+});
+
+
+// =====================================================
+// SUMMARY ERROR
+// =====================================================
+
+socket.on("summaryError", (error) => {
+
+    console.error(
+        "AI Summary Error:",
+        error
+    );
+
+
+    alert(
+        "Unable to generate meeting summary."
+    );
+
+});
+
+
+// =====================================================
+// DISPLAY AI SUMMARY
+// =====================================================
+
+function displaySummary(summary) {
+
+    const container =
+        document.getElementById(
+            "summaryContainer"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.style.display =
+        "block";
+
+
+    // Summary
+
+    const summaryText =
+        document.getElementById(
+            "summaryText"
+        );
+
+
+    if (summaryText) {
+
+        summaryText.innerText =
+            summary.summary || "No summary available.";
+
+    }
+
+
+    // Key Points
+
+    displayList(
+        "keyPoints",
+        summary.keyPoints
+    );
+
+
+    // Decisions
+
+    displayList(
+        "decisions",
+        summary.decisions
+    );
+
+
+    // Action Items
+
+    displayActionItems(
+        summary.actionItems
+    );
+
+
+    // Unresolved Issues
+
+    displayList(
+        "unresolvedIssues",
+        summary.unresolvedIssues
+    );
+
+}
+
+
+// =====================================================
+// DISPLAY LIST
+// =====================================================
+
+function displayList(elementId, items) {
+
+    const element =
+        document.getElementById(
+            elementId
+        );
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    element.innerHTML = "";
+
+
+    if (!items || items.length === 0) {
+
+        const li =
+            document.createElement("li");
+
+        li.innerText =
+            "None";
+
+        element.appendChild(li);
+
+        return;
+
+    }
+
+
+    items.forEach((item) => {
+
+        const li =
+            document.createElement("li");
+
+        li.innerText =
+            item;
+
+        element.appendChild(li);
+
+    });
+
+}
+
+
+// =====================================================
+// DISPLAY ACTION ITEMS
+// =====================================================
+
+function displayActionItems(items) {
+
+    const container =
+        document.getElementById(
+            "actionItems"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    if (!items || items.length === 0) {
+
+        container.innerHTML =
+            "<p>No action items.</p>";
+
+        return;
+
+    }
+
+
+    items.forEach((item) => {
+
+        const div =
+            document.createElement("div");
+
+
+        div.className =
+            "action-item";
+
+
+        div.innerHTML = `
+
+            <div class="action-person">
+                ${item.person || "Team"}
+            </div>
+
+            <div>
+                ${item.task || ""}
+            </div>
+
+            <div class="action-deadline">
+                Deadline: ${item.deadline || "None"}
+            </div>
+
+        `;
+
+
+        container.appendChild(div);
+
+    });
 
 }

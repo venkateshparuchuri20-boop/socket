@@ -1,152 +1,337 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
 
-    <title>Admin Panel</title>
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>SQAC Admin Panel</title>
+
+    <link rel="stylesheet" href="style.css">
 
 </head>
 
+
 <body>
 
-    <h1>Admin Panel</h1>
+    <div class="admin-container">
 
-    <button id="createMeeting">
-        Create Meeting
-    </button>
 
-    <h2 id="meetingInfo">
-        No meeting created yet.
-    </h2>
+        <!-- =========================
+             HEADER
+        ========================== -->
 
-    <hr>
+        <header class="admin-header">
 
-    <h2>Create Poll</h2>
+            <div>
 
-    <input
-        id="question"
-        placeholder="Enter Question"
-    >
+                <h1>SQAC</h1>
 
-    <br><br>
+                <p>Smart Meeting Platform</p>
 
-    <input
-        id="option1"
-        placeholder="Option 1"
-    >
+            </div>
 
-    <br><br>
 
-    <input
-        id="option2"
-        placeholder="Option 2"
-    >
+            <div class="meeting-status">
 
-    <br><br>
+                <span class="live-dot"></span>
 
-    <input
-        id="option3"
-        placeholder="Option 3"
-    >
+                LIVE
 
-    <br><br>
+            </div>
 
-    <button id="createPoll">
-        Create Poll
-    </button>
+        </header>
 
-    <hr>
 
-    <h2>Meeting Transcript</h2>
 
-    <div id="meetingTranscript">
+        <!-- =========================
+             DASHBOARD
+        ========================== -->
 
-        No messages yet.
+        <main class="admin-dashboard">
+
+
+            <!-- =========================
+                 MEETING INFORMATION
+            ========================== -->
+
+            <section class="admin-card">
+
+                <div class="card-header">
+
+                    <h2>Meeting</h2>
+
+                </div>
+
+
+                <div class="meeting-info">
+
+                    <h3>MEET004</h3>
+
+                    <p>
+                        Live Meeting
+                    </p>
+
+
+                    <div class="participant-count">
+
+                        👥
+
+                        <span id="participantCount">
+                            Participants
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </section>
+
+
+
+            <!-- =========================
+                 CREATE POLL
+            ========================== -->
+
+            <section class="admin-card poll-creator">
+
+                <div class="card-header">
+
+                    <h2>Create Live Poll</h2>
+
+                    <span class="poll-status">
+                        LIVE POLL
+                    </span>
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="question">
+                        Question
+                    </label>
+
+                    <input
+                        id="question"
+                        type="text"
+                        placeholder="Enter your question"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="option1">
+                        Option 1
+                    </label>
+
+                    <input
+                        id="option1"
+                        type="text"
+                        placeholder="Enter option"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="option2">
+                        Option 2
+                    </label>
+
+                    <input
+                        id="option2"
+                        type="text"
+                        placeholder="Enter option"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="option3">
+                        Option 3
+                    </label>
+
+                    <input
+                        id="option3"
+                        type="text"
+                        placeholder="Enter option"
+                    >
+
+                </div>
+
+
+                <button
+                    id="createPoll"
+                    class="create-poll-btn"
+                >
+                    Create Poll
+                </button>
+
+
+                <p id="pollMessage"></p>
+
+            </section>
+
+
+
+            <!-- =========================
+                 AI MEETING SUMMARY
+            ========================== -->
+
+            <section class="admin-card ai-card">
+
+
+                <div class="card-header">
+
+                    <h2>
+                        🤖 AI Meeting Assistant
+                    </h2>
+
+                </div>
+
+
+                <p class="ai-description">
+
+                    Generate an AI-powered summary of the
+                    meeting including key points, decisions,
+                    action items and unresolved issues.
+
+                </p>
+
+
+                <button
+                    id="generateSummary"
+                    class="ai-summary-btn"
+                >
+
+                    Generate AI Summary
+
+                </button>
+
+
+
+                <!-- SUMMARY RESULT -->
+
+                <div
+                    id="summaryContainer"
+                    class="summary-container"
+                >
+
+
+                    <!-- SUMMARY -->
+
+                    <div class="summary-section">
+
+                        <h3>
+                            Summary
+                        </h3>
+
+                        <p id="summaryText">
+                            No summary generated yet.
+                        </p>
+
+                    </div>
+
+
+
+                    <!-- KEY POINTS -->
+
+                    <div class="summary-section">
+
+                        <h3>
+                            Key Points
+                        </h3>
+
+                        <ul id="keyPointsList"></ul>
+
+                    </div>
+
+
+
+                    <!-- DECISIONS -->
+
+                    <div class="summary-section">
+
+                        <h3>
+                            Decisions
+                        </h3>
+
+                        <ul id="decisionsList"></ul>
+
+                    </div>
+
+
+
+                    <!-- ACTION ITEMS -->
+
+                    <div class="summary-section">
+
+                        <h3>
+                            Action Items
+                        </h3>
+
+                        <div id="actionItemsList"></div>
+
+                    </div>
+
+
+
+                    <!-- UNRESOLVED ISSUES -->
+
+                    <div class="summary-section">
+
+                        <h3>
+                            Unresolved Issues
+                        </h3>
+
+                        <ul id="unresolvedIssuesList"></ul>
+
+                    </div>
+
+
+                </div>
+
+            </section>
+
+
+        </main>
 
     </div>
 
-    <br>
 
-    <button id="generateSummary">
-        Generate AI Summary
-    </button>
 
-    <div id="summaryResult"></div>
-
+    <!-- =========================
+         SOCKET.IO
+    ========================== -->
 
     <script src="/socket.io/socket.io.js"></script>
 
+
+
     <script>
+
+        // Connect to Socket.IO
 
         const socket = io();
 
 
-        socket.on("connect", () => {
 
-            console.log(
-                "Admin connected to Socket.IO:",
-                socket.id
-            );
-
-        });
-
-
-        socket.on("connect_error", (error) => {
-
-            console.error(
-                "Socket connection error:",
-                error
-            );
-
-        });
-
-
-        document
-            .getElementById("createMeeting")
-            .addEventListener("click", () => {
-
-                console.log(
-                    "Create Meeting button clicked"
-                );
-
-                socket.emit(
-                    "createMeeting"
-                );
-
-            });
-
-
-        socket.on("meetingCreated", (meetingId) => {
-
-            console.log(
-                "MEETING CREATED:",
-                meetingId
-            );
-
-            document
-                .getElementById("meetingInfo")
-                .innerText =
-                    "Meeting ID: " + meetingId;
-
-        });
-
-
-        socket.on("meetingCreationError", () => {
-
-            console.error(
-                "Meeting creation failed"
-            );
-
-            alert(
-                "Failed to create meeting."
-            );
-
-        });
-
+        // =====================================================
+        // CREATE POLL
+        // =====================================================
 
         document
             .getElementById("createPoll")
             .addEventListener("click", () => {
+
 
                 const question =
                     document
@@ -154,17 +339,20 @@
                         .value
                         .trim();
 
+
                 const option1 =
                     document
                         .getElementById("option1")
                         .value
                         .trim();
 
+
                 const option2 =
                     document
                         .getElementById("option2")
                         .value
                         .trim();
+
 
                 const option3 =
                     document
@@ -173,10 +361,18 @@
                         .trim();
 
 
-                if (question === "") {
+
+                // Validate
+
+                if (
+                    question === "" ||
+                    option1 === "" ||
+                    option2 === "" ||
+                    option3 === ""
+                ) {
 
                     alert(
-                        "Please enter a question."
+                        "Please fill all poll fields."
                     );
 
                     return;
@@ -184,184 +380,77 @@
                 }
 
 
-                const options = [
-                    option1,
-                    option2,
-                    option3
-                ].filter(
-                    option => option !== ""
-                );
 
-
-                if (options.length < 2) {
-
-                    alert(
-                        "Please enter at least two options."
-                    );
-
-                    return;
-
-                }
-
+                // Create poll object
 
                 const poll = {
 
                     question: question,
 
-                    options: options
+                    options: [
+                        option1,
+                        option2,
+                        option3
+                    ]
 
                 };
 
 
-                console.log(
-                    "Creating poll:",
-                    poll
-                );
 
+                // Send poll to backend
 
                 socket.emit(
                     "createPoll",
                     poll
                 );
 
-            });
 
 
-        socket.on("invalidPoll", () => {
-
-            alert(
-                "Please enter a valid question and at least two options."
-            );
-
-        });
+                document
+                    .getElementById("pollMessage")
+                    .innerText =
+                    "✓ Poll created successfully";
 
 
-        socket.on("chatHistory", (messages) => {
-
-            console.log(
-                "Chat history received:",
-                messages
-            );
-
-
-            const transcript =
-                document.getElementById(
-                    "meetingTranscript"
-                );
-
-
-            transcript.innerHTML = "";
-
-
-            if (
-                !messages ||
-                messages.length === 0
-            ) {
-
-                transcript.innerText =
-                    "No messages yet.";
-
-                return;
-
-            }
-
-
-            messages.forEach((message) => {
-
-                addMessageToTranscript(
-                    message
+                console.log(
+                    "Poll created:",
+                    poll
                 );
 
             });
 
-        });
 
 
-        socket.on("newMessage", (message) => {
-
-            console.log(
-                "New message received:",
-                message
-            );
-
-
-            const transcript =
-                document.getElementById(
-                    "meetingTranscript"
-                );
-
-
-            if (
-                transcript.innerText ===
-                "No messages yet."
-            ) {
-
-                transcript.innerHTML = "";
-
-            }
-
-
-            addMessageToTranscript(
-                message
-            );
-
-        });
-
-
-        function addMessageToTranscript(message) {
-
-            const transcript =
-                document.getElementById(
-                    "meetingTranscript"
-                );
-
-
-            const messageElement =
-                document.createElement("p");
-
-
-            const name =
-                document.createElement("strong");
-
-            name.innerText =
-                message.name;
-
-
-            const text =
-                document.createTextNode(
-                    ": " + message.text + " "
-                );
-
-
-            const time =
-                document.createElement("small");
-
-            time.innerText =
-                "(" + message.time + ")";
-
-
-            messageElement.appendChild(name);
-
-            messageElement.appendChild(text);
-
-            messageElement.appendChild(time);
-
-
-            transcript.appendChild(
-                messageElement
-            );
-
-        }
-
+        // =====================================================
+        // GENERATE AI SUMMARY
+        // =====================================================
 
         document
             .getElementById("generateSummary")
             .addEventListener("click", () => {
 
+
+                const button =
+                    document.getElementById(
+                        "generateSummary"
+                    );
+
+
+                // Disable button while generating
+
+                button.disabled = true;
+
+
+                button.innerText =
+                    "Generating Summary...";
+
+
                 console.log(
-                    "Requesting AI summary..."
+                    "Requesting AI meeting summary..."
                 );
 
+
+                // Ask backend to generate summary
 
                 socket.emit(
                     "generateSummary"
@@ -370,139 +459,349 @@
             });
 
 
-        socket.on("summaryGenerated", (summary) => {
 
-            console.log(
-                "AI SUMMARY RECEIVED:",
-                summary
-            );
+        // =====================================================
+        // SUMMARY GENERATED SUCCESSFULLY
+        // =====================================================
+
+        socket.on(
+            "summaryGenerated",
+            (data) => {
 
 
-            const result =
-                document.getElementById(
-                    "summaryResult"
+                console.log(
+                    "AI Summary received:",
+                    data
                 );
 
 
-            result.innerHTML = `
+                // Display summary
 
-                <hr>
-
-                <h2>AI Summary</h2>
-
-                <p>
-                    ${summary.summary || "No summary available."}
-                </p>
+                displaySummary(data);
 
 
-                <h3>Key Points</h3>
+                // Enable button again
 
-                <ul>
-
-                    ${(summary.keyPoints || [])
-                        .map(
-                            point =>
-                                `<li>${point}</li>`
-                        )
-                        .join("")}
-
-                </ul>
+                const button =
+                    document.getElementById(
+                        "generateSummary"
+                    );
 
 
-                <h3>Decisions</h3>
-
-                <ul>
-
-                    ${(summary.decisions || [])
-                        .map(
-                            decision =>
-                                `<li>${decision}</li>`
-                        )
-                        .join("")}
-
-                </ul>
+                button.disabled = false;
 
 
-                <h3>Action Items</h3>
+                button.innerText =
+                    "Generate AI Summary";
 
-                <ul>
-
-                    ${(summary.actionItems || [])
-                        .map(
-                            item => `
-
-                                <li>
-
-                                    <strong>
-                                        ${item.person || "Team"}
-                                    </strong>:
-
-                                    ${item.task || ""}
-
-                                    (Deadline:
-                                    ${item.deadline || "None"})
-
-                                </li>
-
-                            `
-                        )
-                        .join("")}
-
-                </ul>
+            }
+        );
 
 
-                <h3>Unresolved Issues</h3>
 
-                <ul>
+        // =====================================================
+        // EMPTY TRANSCRIPT
+        // =====================================================
 
-                    ${(summary.unresolvedIssues || [])
-                        .map(
-                            issue =>
-                                `<li>${issue}</li>`
-                        )
-                        .join("")}
-
-                </ul>
-
-            `;
-
-        });
+        socket.on(
+            "emptyTranscript",
+            () => {
 
 
-        socket.on("summaryError", (message) => {
-
-            alert(message);
-
-        });
+                alert(
+                    "No meeting messages are available to generate a summary."
+                );
 
 
-        socket.on("emptyTranscript", () => {
-
-            alert(
-                "There are no messages in this meeting to summarize."
-            );
-
-        });
+                const button =
+                    document.getElementById(
+                        "generateSummary"
+                    );
 
 
-        socket.on("notAuthorized", () => {
-
-            alert(
-                "Only the meeting admin can perform this action."
-            );
-
-        });
+                button.disabled = false;
 
 
-        socket.on("meetingNotFound", () => {
+                button.innerText =
+                    "Generate AI Summary";
 
-            alert(
-                "Meeting not found."
-            );
+            }
+        );
 
-        });
+
+
+        // =====================================================
+        // SUMMARY ERROR
+        // =====================================================
+
+        socket.on(
+            "summaryError",
+            (error) => {
+
+
+                console.error(
+                    "AI Summary Error:",
+                    error
+                );
+
+
+                alert(
+                    "Unable to generate meeting summary. Please try again."
+                );
+
+
+                const button =
+                    document.getElementById(
+                        "generateSummary"
+                    );
+
+
+                button.disabled = false;
+
+
+                button.innerText =
+                    "Generate AI Summary";
+
+            }
+        );
+
+
+
+        // =====================================================
+        // DISPLAY AI SUMMARY
+        // =====================================================
+
+        function displaySummary(data) {
+
+
+            // -----------------------------
+            // Summary
+            // -----------------------------
+
+            document
+                .getElementById("summaryText")
+                .innerText =
+                data.summary || "No summary available.";
+
+
+
+            // -----------------------------
+            // Key Points
+            // -----------------------------
+
+            const keyPointsList =
+                document.getElementById(
+                    "keyPointsList"
+                );
+
+
+            keyPointsList.innerHTML = "";
+
+
+            if (
+                data.keyPoints &&
+                data.keyPoints.length > 0
+            ) {
+
+
+                data.keyPoints.forEach(
+                    (point) => {
+
+
+                        const li =
+                            document.createElement(
+                                "li"
+                            );
+
+
+                        li.innerText = point;
+
+
+                        keyPointsList.appendChild(
+                            li
+                        );
+
+                    }
+                );
+
+
+            } else {
+
+                keyPointsList.innerHTML =
+                    "<li>None</li>";
+
+            }
+
+
+
+            // -----------------------------
+            // Decisions
+            // -----------------------------
+
+            const decisionsList =
+                document.getElementById(
+                    "decisionsList"
+                );
+
+
+            decisionsList.innerHTML = "";
+
+
+            if (
+                data.decisions &&
+                data.decisions.length > 0
+            ) {
+
+
+                data.decisions.forEach(
+                    (decision) => {
+
+
+                        const li =
+                            document.createElement(
+                                "li"
+                            );
+
+
+                        li.innerText =
+                            decision;
+
+
+                        decisionsList.appendChild(
+                            li
+                        );
+
+                    }
+                );
+
+
+            } else {
+
+                decisionsList.innerHTML =
+                    "<li>None</li>";
+
+            }
+
+
+
+            // -----------------------------
+            // Action Items
+            // -----------------------------
+
+            const actionItemsList =
+                document.getElementById(
+                    "actionItemsList"
+                );
+
+
+            actionItemsList.innerHTML = "";
+
+
+            if (
+                data.actionItems &&
+                data.actionItems.length > 0
+            ) {
+
+
+                data.actionItems.forEach(
+                    (item) => {
+
+
+                        const actionItem =
+                            document.createElement(
+                                "div"
+                            );
+
+
+                        actionItem.className =
+                            "action-item";
+
+
+                        actionItem.innerHTML = `
+
+                            <div class="action-person">
+                                ${item.person || "Team"}
+                            </div>
+
+                            <div>
+                                ${item.task || "No task specified"}
+                            </div>
+
+                            <div class="action-deadline">
+                                Deadline:
+                                ${item.deadline || "None"}
+                            </div>
+
+                        `;
+
+
+                        actionItemsList.appendChild(
+                            actionItem
+                        );
+
+                    }
+                );
+
+
+            } else {
+
+                actionItemsList.innerHTML =
+                    "<p>No action items.</p>";
+
+            }
+
+
+
+            // -----------------------------
+            // Unresolved Issues
+            // -----------------------------
+
+            const unresolvedIssuesList =
+                document.getElementById(
+                    "unresolvedIssuesList"
+                );
+
+
+            unresolvedIssuesList.innerHTML = "";
+
+
+            if (
+                data.unresolvedIssues &&
+                data.unresolvedIssues.length > 0
+            ) {
+
+
+                data.unresolvedIssues.forEach(
+                    (issue) => {
+
+
+                        const li =
+                            document.createElement(
+                                "li"
+                            );
+
+
+                        li.innerText = issue;
+
+
+                        unresolvedIssuesList
+                            .appendChild(li);
+
+                    }
+                );
+
+
+            } else {
+
+                unresolvedIssuesList.innerHTML =
+                    "<li>None</li>";
+
+            }
+
+        }
 
     </script>
+
 
 </body>
 
