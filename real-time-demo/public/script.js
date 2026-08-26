@@ -1,228 +1,495 @@
+// =====================================================
+// SOCKET.IO CONNECTION
+// =====================================================
+
 const socket = io();
 
-let selectedOption = null;
 
-const joinScreen = document.getElementById("joinScreen");
-const pollScreen = document.getElementById("pollScreen");
-
-const meetingIdInput = document.getElementById("meetingId");
-const nameInput = document.getElementById("name");
-const roleInput = document.getElementById("role");
-const regNoInput = document.getElementById("regNo");
+// =====================================================
+// JOIN MEETING
+// =====================================================
 
 const joinBtn = document.getElementById("joinBtn");
 
-const question = document.getElementById("question");
-const options = document.getElementById("options");
-const results = document.getElementById("results");
+if (joinBtn) {
 
-const voteBtn = document.getElementById("voteBtn");
+    joinBtn.addEventListener("click", () => {
 
-const chatMessages = document.getElementById("chatMessages");
-const messageInput = document.getElementById("messageInput");
-const sendMessageBtn = document.getElementById("sendMessageBtn");
+        const name =
+            document.getElementById("name").value.trim();
+
+        const role =
+            document.getElementById("role").value;
+
+        const regNo =
+            document.getElementById("regNo").value.trim();
+
+        const meetingId =
+            document.getElementById("meetingId").value.trim().toUpperCase();
+        document.getElementById("displayMeetingId").textContent =
+    meetingId;
+
+        // Validate name
+        if (name === "") {
+
+            alert("Please enter your name.");
+
+            return;
+        }
 
 
-joinBtn.addEventListener("click", () => {
+        // Validate registration number
+        if (role === "student" && regNo === "") {
 
-    const meetingId = meetingIdInput.value.trim();
-    const name = nameInput.value.trim();
-    const role = roleInput.value;
-    const regNo = regNoInput.value.trim();
+            alert(
+                "Please enter your Registration Number."
+            );
 
-    if (meetingId === "") {
+            return;
+        }
 
-        alert("Please enter Meeting ID");
-        return;
+
+        // Validate Meeting ID
+        if (meetingId === "") {
+
+            alert(
+                "Please enter the Meeting ID."
+            );
+
+            return;
+        }
+
+
+        // Store current user information
+        currentUser = {
+
+            name: name,
+            role: role,
+            regNo: regNo,
+            meetingId: meetingId
+
+        };
+
+
+        // Send join request to server
+        socket.emit("joinMeeting", {
+
+            name: name,
+            role: role,
+            regNo: regNo,
+            meetingId: meetingId
+
+        });
+
+
+        console.log(
+            "Joining meeting...",
+            {
+                name: name,
+                role: role,
+                regNo: regNo,
+                meetingId: meetingId
+            }
+        );
+
+    });
+
+}
+
+
+// =====================================================
+// SUCCESSFULLY JOINED
+// =====================================================
+
+socket.on("joinedSuccessfully", () => {
+
+    console.log(
+        "Successfully joined meeting!"
+    );
+
+
+    const joinScreen =
+        document.getElementById("joinScreen");
+
+    const pollScreen =
+        document.getElementById("pollScreen");
+
+
+    if (joinScreen) {
+
+        joinScreen.style.display = "none";
 
     }
 
-    if (name === "") {
 
-        alert("Please enter your name");
-        return;
+    if (pollScreen) {
 
-    }
-
-    if (role === "student" && regNo === "") {
-
-        alert("Please enter Registration Number");
-        return;
+        pollScreen.style.display = "block";
 
     }
 
-    const user = {
+});
 
-        meetingId: meetingId,
 
-        name: name,
+// =====================================================
+// SOCKET CONNECTION
+// =====================================================
 
-        role: role,
+socket.on("connect", () => {
 
-        regNo: regNo
-
-    };
-
-    console.log("Joining meeting:", user);
-
-    socket.emit(
-        "joinMeeting",
-        user
+    console.log(
+        "Connected to Socket.IO server."
     );
 
 });
 
 
-socket.on("joinedSuccessfully", () => {
+socket.on("disconnect", () => {
 
-    console.log("Successfully joined meeting");
-
-    joinScreen.style.display = "none";
-
-    pollScreen.style.display = "block";
+    console.log(
+        "Disconnected from Socket.IO server."
+    );
 
 });
 
 
-socket.on("meetingNotFound", () => {
-
-    alert("Meeting not found. Please check the Meeting ID.");
-
-});
-
-
-socket.on("notJoined", () => {
-
-    alert("Please join a meeting first.");
-
-});
-
+// =====================================================
+// RECEIVE CURRENT POLL
+// =====================================================
 
 socket.on("currentPoll", (poll) => {
 
     console.log(
-        "CURRENT POLL RECEIVED:",
+        "Poll received:",
         poll
     );
 
-    question.innerText = poll.question;
 
-    options.innerHTML = "";
+    const question =
+        document.getElementById("question");
 
-    selectedOption = null;
+    const optionsDiv =
+        document.getElementById("options");
+
+
+    if (!question || !optionsDiv) {
+
+        return;
+
+    }
+
+
+    question.innerText =
+        poll.question;
+
+
+    optionsDiv.innerHTML = "";
+
 
     poll.options.forEach((option) => {
 
-        const label = document.createElement("label");
+        const label =
+            document.createElement("label");
 
-        const radio = document.createElement("input");
 
-        radio.type = "radio";
+        label.innerHTML = `
 
-        radio.name = "pollOption";
+            <input
+                type="radio"
+                name="language"
+                value="${option}"
+            >
 
-        radio.value = option;
+            <span>${option}</span>
 
-        radio.addEventListener("change", () => {
+        `;
 
-            selectedOption = option;
 
-        });
-
-        label.appendChild(radio);
-
-        label.appendChild(
-            document.createTextNode(" " + option)
-        );
-
-        const div = document.createElement("div");
-
-        div.appendChild(label);
-
-        options.appendChild(div);
+        optionsDiv.appendChild(label);
 
     });
 
 });
 
+
+// =====================================================
+// VOTE
+// =====================================================
+
+const voteBtn =
+    document.getElementById("voteBtn");
+
+
+if (voteBtn) {
+
+    voteBtn.addEventListener(
+        "click",
+        () => {
+
+            const selected =
+                document.querySelector(
+                    'input[name="language"]:checked'
+                );
+
+
+            if (!selected) {
+
+                alert(
+                    "Please select one option."
+                );
+
+                return;
+
+            }
+
+
+            socket.emit(
+                "vote",
+                selected.value
+            );
+
+
+            console.log(
+                "Vote submitted:",
+                selected.value
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// LIVE VOTE RESULTS
+// =====================================================
 
 socket.on("voteUpdate", (votes) => {
 
     console.log(
-        "LIVE RESULTS RECEIVED:",
+        "Vote results:",
         votes
     );
 
-    results.innerHTML = "";
 
-    const voteKeys = Object.keys(votes);
+    const resultsDiv =
+        document.getElementById("results");
 
-    if (voteKeys.length === 0) {
 
-        results.innerHTML =
-            "<p>No poll results yet.</p>";
+    if (!resultsDiv) {
 
         return;
 
     }
 
-    voteKeys.forEach((option) => {
 
-        const result = document.createElement("p");
-
-        result.innerText =
-            option + " : " + votes[option];
-
-        results.appendChild(result);
-
-    });
-
-});
+    resultsDiv.innerHTML = "";
 
 
-voteBtn.addEventListener("click", () => {
+    let totalVotes = 0;
 
-    if (!selectedOption) {
 
-        alert("Please select an option.");
+    for (const option in votes) {
 
-        return;
+        totalVotes += votes[option];
 
     }
 
-    console.log(
-        "Voting for:",
-        selectedOption
-    );
 
-    socket.emit(
-        "vote",
-        selectedOption
-    );
+    for (const option in votes) {
+
+        const count =
+            votes[option];
+
+
+        let percentage = 0;
+
+
+        if (totalVotes > 0) {
+
+            percentage =
+                Math.round(
+                    (count / totalVotes) * 100
+                );
+
+        }
+
+
+        const resultRow =
+            document.createElement("div");
+
+
+        resultRow.className =
+            "result-row";
+
+
+        resultRow.innerHTML = `
+
+            <div class="result-info">
+
+                <span>
+                    ${option}
+                </span>
+
+                <span>
+                    ${count} (${percentage}%)
+                </span>
+
+            </div>
+
+
+            <div class="result-bar">
+
+                <div
+                    class="result-fill"
+                    style="width:${percentage}%"
+                ></div>
+
+            </div>
+
+        `;
+
+
+        resultsDiv.appendChild(
+            resultRow
+        );
+
+    }
 
 });
 
+
+// =====================================================
+// ALREADY VOTED
+// =====================================================
 
 socket.on("alreadyVoted", () => {
 
-    alert("You have already voted in this poll.");
+    alert("You have already voted!");
 
+    const voteBtn = document.getElementById("voteBtn");
+
+    if (voteBtn) {
+        voteBtn.disabled = true;
+        voteBtn.innerText = "Already Voted";
+    }
+
+    document
+        .querySelectorAll('input[name="language"]')
+        .forEach((input) => {
+            input.disabled = true;
+        });
 });
 
 
-socket.on("invalidOption", () => {
+// =====================================================
+// LIVE DISCUSSION
+// =====================================================
 
-    alert("Invalid poll option.");
+const messageInput =
+    document.getElementById("messageInput");
 
-});
+
+const sendMessageBtn =
+    document.getElementById("sendMessageBtn");
 
 
-socket.on("noPoll", () => {
+const messagesDiv =
+    document.getElementById("messages");
 
-    alert("There is no active poll.");
 
-});
+// =====================================================
+// SEND MESSAGE
+// =====================================================
 
+function sendMessage() {
+
+    if (!messageInput) {
+
+        console.error(
+            "messageInput element not found."
+        );
+
+        return;
+
+    }
+
+
+    const message =
+        messageInput.value.trim();
+
+
+    if (message === "") {
+
+        return;
+
+    }
+
+
+    console.log(
+        "Sending message:",
+        message
+    );
+
+
+    // IMPORTANT:
+    // Backend expects the message text directly.
+    //
+    // server.js:
+    // socket.on("sendMessage", async (messageText) => {
+
+    socket.emit(
+        "sendMessage",
+        message
+    );
+
+
+    messageInput.value = "";
+
+}
+
+
+// =====================================================
+// SEND BUTTON
+// =====================================================
+
+if (sendMessageBtn) {
+
+    sendMessageBtn.addEventListener(
+        "click",
+        sendMessage
+    );
+
+}
+
+
+// =====================================================
+// SEND MESSAGE USING ENTER
+// =====================================================
+
+if (messageInput) {
+
+    messageInput.addEventListener(
+        "keydown",
+        (event) => {
+
+            if (event.key === "Enter") {
+
+                event.preventDefault();
+
+                sendMessage();
+
+            }
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// CHAT HISTORY
+// =====================================================
 
 socket.on("chatHistory", (messages) => {
 
@@ -231,16 +498,52 @@ socket.on("chatHistory", (messages) => {
         messages
     );
 
-    chatMessages.innerHTML = "";
+
+    if (!messagesDiv) {
+
+        console.error(
+            "messages element not found."
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * If there are no previous messages,
+     * keep the default "Welcome to the meeting!"
+     * message already present in index.html.
+     */
+
+    if (!messages || messages.length === 0) {
+
+        return;
+
+    }
+
+
+    // Remove default welcome message
+
+    messagesDiv.innerHTML = "";
+
 
     messages.forEach((message) => {
 
-        displayMessage(message);
+        addMessage(
+            message.name || "Participant",
+            message.text || "",
+            message.time || ""
+        );
 
     });
 
 });
 
+
+// =====================================================
+// NEW REAL-TIME MESSAGE
+// =====================================================
 
 socket.on("newMessage", (message) => {
 
@@ -249,101 +552,444 @@ socket.on("newMessage", (message) => {
         message
     );
 
-    displayMessage(message);
 
-});
-
-
-function displayMessage(message) {
-
-    const messageDiv =
-        document.createElement("div");
-
-    messageDiv.innerHTML = `
-
-        <p>
-            <strong>${escapeHtml(message.name)}</strong>:
-            ${escapeHtml(message.text)}
-            <small>(${message.time})</small>
-        </p>
-
-    `;
-
-    chatMessages.appendChild(messageDiv);
-
-    chatMessages.scrollTop =
-        chatMessages.scrollHeight;
-
-}
-
-
-sendMessageBtn.addEventListener("click", sendMessage);
-
-
-messageInput.addEventListener("keydown", (event) => {
-
-    if (event.key === "Enter") {
-
-        sendMessage();
-
-    }
-
-});
-
-
-function sendMessage() {
-
-    const text =
-        messageInput.value.trim();
-
-    if (text === "") {
-
-        return;
-
-    }
-
-    socket.emit(
-        "sendMessage",
-        text
+    addMessage(
+        message.name || "Participant",
+        message.text || "",
+        message.time || ""
     );
 
-    messageInput.value = "";
+});
 
-}
 
+// =====================================================
+// MESSAGE SAVE ERROR
+// =====================================================
 
 socket.on("messageSaveError", (message) => {
+
+    console.error(
+        "Message save error:",
+        message
+    );
+
 
     alert(message);
 
 });
 
 
+// =====================================================
+// DISPLAY MESSAGE
+// =====================================================
+
+function addMessage(
+    name,
+    message,
+    time = ""
+) {
+
+    if (!messagesDiv) {
+
+        console.error(
+            "messages element not found."
+        );
+
+        return;
+
+    }
+
+
+    const messageDiv =
+        document.createElement("div");
+
+
+    messageDiv.className =
+        "message";
+
+
+    const firstLetter =
+        name.charAt(0).toUpperCase();
+
+
+    messageDiv.innerHTML = `
+
+        <div class="avatar">
+
+            ${firstLetter}
+
+        </div>
+
+
+        <div class="message-content">
+
+            <strong>
+
+                ${name}
+
+            </strong>
+
+
+            <p>
+
+                ${message}
+
+            </p>
+
+
+            ${
+                time
+                    ? `<small>${time}</small>`
+                    : ""
+            }
+
+        </div>
+
+    `;
+
+
+    messagesDiv.appendChild(
+        messageDiv
+    );
+
+
+    // Automatically scroll to latest message
+
+    messagesDiv.scrollTop =
+        messagesDiv.scrollHeight;
+
+}
+
+
+// =====================================================
+// AI SUMMARY
+// =====================================================
+
+const generateSummaryBtn =
+    document.getElementById(
+        "generateSummaryBtn"
+    );
+
+
+if (generateSummaryBtn) {
+
+    generateSummaryBtn.addEventListener(
+        "click",
+        () => {
+
+            console.log(
+                "Requesting AI meeting summary..."
+            );
+
+
+            socket.emit(
+                "generateSummary"
+            );
+
+        }
+    );
+
+}
+
+
+// =====================================================
+// AI SUMMARY GENERATED
+// =====================================================
+
+socket.on("summaryGenerated", (summary) => {
+
+    console.log(
+        "AI Summary received:",
+        summary
+    );
+
+
+    displaySummary(summary);
+
+});
+
+
+// =====================================================
+// EMPTY TRANSCRIPT
+// =====================================================
+
+socket.on("emptyTranscript", () => {
+
+    alert(
+        "No meeting discussion is available to summarize."
+    );
+
+});
+
+
+// =====================================================
+// SUMMARY ERROR
+// =====================================================
+
+socket.on("summaryError", (error) => {
+
+    console.error(
+        "AI Summary Error:",
+        error
+    );
+
+
+    alert(
+        "Unable to generate meeting summary."
+    );
+
+});
+
+
+// =====================================================
+// NOT AUTHORIZED
+// =====================================================
+
 socket.on("notAuthorized", () => {
 
     alert(
-        "You are not authorized to perform this action."
+        "Only the meeting admin can generate the AI summary."
     );
 
 });
 
 
-socket.on("invalidPoll", () => {
+// =====================================================
+// MEETING NOT FOUND
+// =====================================================
+
+socket.on("meetingNotFound", () => {
 
     alert(
-        "Please enter a valid question and at least two options."
+        "Meeting not found."
     );
 
 });
 
 
-function escapeHtml(text) {
+// =====================================================
+// DISPLAY AI SUMMARY
+// =====================================================
 
-    const div =
-        document.createElement("div");
+function displaySummary(summary) {
 
-    div.textContent = text;
+    const container =
+        document.getElementById(
+            "summaryContainer"
+        );
 
-    return div.innerHTML;
+
+    if (!container) {
+
+        console.error(
+            "summaryContainer not found."
+        );
+
+        return;
+
+    }
+
+
+    container.style.display =
+        "block";
+
+
+    // -------------------------------------------------
+    // SUMMARY
+    // -------------------------------------------------
+
+    const summaryText =
+        document.getElementById(
+            "summaryText"
+        );
+
+
+    if (summaryText) {
+
+        summaryText.innerText =
+            summary.summary ||
+            "No summary available.";
+
+    }
+
+
+    // -------------------------------------------------
+    // KEY POINTS
+    // -------------------------------------------------
+
+    displayList(
+        "keyPoints",
+        summary.keyPoints
+    );
+
+
+    // -------------------------------------------------
+    // DECISIONS
+    // -------------------------------------------------
+
+    displayList(
+        "decisions",
+        summary.decisions
+    );
+
+
+    // -------------------------------------------------
+    // ACTION ITEMS
+    // -------------------------------------------------
+
+    displayActionItems(
+        summary.actionItems
+    );
+
+
+    // -------------------------------------------------
+    // UNRESOLVED ISSUES
+    // -------------------------------------------------
+
+    displayList(
+        "unresolvedIssues",
+        summary.unresolvedIssues
+    );
+
+}
+
+
+// =====================================================
+// DISPLAY LIST
+// =====================================================
+
+function displayList(
+    elementId,
+    items
+) {
+
+    const element =
+        document.getElementById(
+            elementId
+        );
+
+
+    if (!element) {
+
+        return;
+
+    }
+
+
+    element.innerHTML = "";
+
+
+    if (!items || items.length === 0) {
+
+        const li =
+            document.createElement("li");
+
+
+        li.innerText =
+            "None";
+
+
+        element.appendChild(
+            li
+        );
+
+
+        return;
+
+    }
+
+
+    items.forEach((item) => {
+
+        const li =
+            document.createElement("li");
+
+
+        li.innerText =
+            item;
+
+
+        element.appendChild(
+            li
+        );
+
+    });
+
+}
+
+
+// =====================================================
+// DISPLAY ACTION ITEMS
+// =====================================================
+
+function displayActionItems(items) {
+
+    const container =
+        document.getElementById(
+            "actionItems"
+        );
+
+
+    if (!container) {
+
+        return;
+
+    }
+
+
+    container.innerHTML = "";
+
+
+    if (!items || items.length === 0) {
+
+        container.innerHTML =
+            "<p>No action items.</p>";
+
+        return;
+
+    }
+
+
+    items.forEach((item) => {
+
+        const div =
+            document.createElement("div");
+
+
+        div.className =
+            "action-item";
+
+
+        div.innerHTML = `
+
+            <div class="action-person">
+
+                ${item.person || "Team"}
+
+            </div>
+
+
+            <div>
+
+                ${item.task || ""}
+
+            </div>
+
+
+            <div class="action-deadline">
+
+                Deadline:
+                ${item.deadline || "None"}
+
+            </div>
+
+        `;
+
+
+        container.appendChild(
+            div
+        );
+
+    });
 
 }
