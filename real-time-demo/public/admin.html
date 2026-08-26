@@ -68,7 +68,9 @@
 
                 <div class="meeting-info">
 
-                    <h3>MEET004</h3>
+                    <h3 id="meetingId">Loading...</h3>
+
+        
 
                     <p>
                         Live Meeting
@@ -320,9 +322,48 @@
 
         // Connect to Socket.IO
 
-        const socket = io();
+      const socket = io();
+
+let currentMeetingId = null;
 
 
+// ==========================================
+// CONNECT TO SERVER
+// ==========================================
+
+socket.on("connect", () => {
+
+    console.log("Admin connected:", socket.id);
+
+    // Ask server to create a NEW meeting
+    socket.emit("joinMeeting", {
+        name: "Admin",
+        role: "admin",
+        regNo: "",
+        meetingId: null
+    });
+
+});
+
+
+// ==========================================
+// RECEIVE GENERATED MEETING ID
+// ==========================================
+
+socket.on("meetingId", (meetingId) => {
+
+    console.log("🔥 RECEIVED MEETING ID:", meetingId);
+
+    currentMeetingId = meetingId;
+
+    const element =
+        document.getElementById("meetingId");
+
+    if (element) {
+        element.textContent = meetingId;
+    }
+
+});
 
         // =====================================================
         // CREATE POLL

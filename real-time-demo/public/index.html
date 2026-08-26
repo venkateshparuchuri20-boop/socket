@@ -72,6 +72,15 @@
                 type="text"
                 placeholder="Enter registration number"
             >
+            <label for="meetingId">
+    Meeting ID
+</label>
+
+<input
+    id="meetingId"
+    type="text"
+    placeholder="Enter meeting ID (e.g. MEETXXXX)"
+>
 
             <button id="joinBtn" class="primary-btn">
                 Join Meeting
@@ -135,8 +144,8 @@
             <div class="meeting-info">
 
                 <div class="meeting-id">
-                    MEET004
-                </div>
+    <span id="displayMeetingId">Loading...</span>
+</div>
 
                 <div class="live-status">
 

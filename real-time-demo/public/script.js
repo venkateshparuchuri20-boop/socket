@@ -24,9 +24,12 @@ if (joinBtn) {
         const regNo =
             document.getElementById("regNo").value.trim();
 
+        const meetingId =
+            document.getElementById("meetingId").value.trim().toUpperCase();
+        document.getElementById("displayMeetingId").textContent =
+    meetingId;
 
         // Validate name
-
         if (name === "") {
 
             alert("Please enter your name.");
@@ -35,8 +38,7 @@ if (joinBtn) {
         }
 
 
-        // Student must enter registration number
-
+        // Validate registration number
         if (role === "student" && regNo === "") {
 
             alert(
@@ -47,20 +49,47 @@ if (joinBtn) {
         }
 
 
-        // Send user information to server
+        // Validate Meeting ID
+        if (meetingId === "") {
 
+            alert(
+                "Please enter the Meeting ID."
+            );
+
+            return;
+        }
+
+
+        // Store current user information
+        currentUser = {
+
+            name: name,
+            role: role,
+            regNo: regNo,
+            meetingId: meetingId
+
+        };
+
+
+        // Send join request to server
         socket.emit("joinMeeting", {
 
             name: name,
             role: role,
-            regNo: regNo
+            regNo: regNo,
+            meetingId: meetingId
 
         });
 
 
         console.log(
             "Joining meeting...",
-            name
+            {
+                name: name,
+                role: role,
+                regNo: regNo,
+                meetingId: meetingId
+            }
         );
 
     });
@@ -103,7 +132,7 @@ socket.on("joinedSuccessfully", () => {
 
 
 // =====================================================
-// CONNECTION STATUS
+// SOCKET CONNECTION
 // =====================================================
 
 socket.on("connect", () => {
@@ -150,18 +179,12 @@ socket.on("currentPoll", (poll) => {
     }
 
 
-    // Display question
-
     question.innerText =
         poll.question;
 
 
-    // Clear old options
-
     optionsDiv.innerHTML = "";
 
-
-    // Create radio buttons
 
     poll.options.forEach((option) => {
 
@@ -203,14 +226,11 @@ if (voteBtn) {
         "click",
         () => {
 
-
             const selected =
                 document.querySelector(
                     'input[name="language"]:checked'
                 );
 
-
-            // No option selected
 
             if (!selected) {
 
@@ -222,8 +242,6 @@ if (voteBtn) {
 
             }
 
-
-            // Send vote to server
 
             socket.emit(
                 "vote",
@@ -268,8 +286,6 @@ socket.on("voteUpdate", (votes) => {
     resultsDiv.innerHTML = "";
 
 
-    // Calculate total votes
-
     let totalVotes = 0;
 
 
@@ -280,10 +296,7 @@ socket.on("voteUpdate", (votes) => {
     }
 
 
-    // Display every option
-
     for (const option in votes) {
-
 
         const count =
             votes[option];
@@ -324,6 +337,7 @@ socket.on("voteUpdate", (votes) => {
 
             </div>
 
+
             <div class="result-bar">
 
                 <div
@@ -351,32 +365,50 @@ socket.on("voteUpdate", (votes) => {
 
 socket.on("alreadyVoted", () => {
 
-    alert(
-        "You have already voted!"
-    );
+    alert("You have already voted!");
 
+    const voteBtn = document.getElementById("voteBtn");
+
+    if (voteBtn) {
+        voteBtn.disabled = true;
+        voteBtn.innerText = "Already Voted";
+    }
+
+    document
+        .querySelectorAll('input[name="language"]')
+        .forEach((input) => {
+            input.disabled = true;
+        });
 });
 
 
 // =====================================================
-// LIVE DISCUSSION - FRONTEND
+// LIVE DISCUSSION
 // =====================================================
 
 const messageInput =
     document.getElementById("messageInput");
 
+
 const sendMessageBtn =
     document.getElementById("sendMessageBtn");
+
 
 const messagesDiv =
     document.getElementById("messages");
 
 
-// Send message
+// =====================================================
+// SEND MESSAGE
+// =====================================================
 
 function sendMessage() {
 
     if (!messageInput) {
+
+        console.error(
+            "messageInput element not found."
+        );
 
         return;
 
@@ -394,17 +426,22 @@ function sendMessage() {
     }
 
 
-    /*
-     * The backend will handle this event
-     * when the real-time discussion feature
-     * is connected.
-     */
+    console.log(
+        "Sending message:",
+        message
+    );
 
-    socket.emit("sendMessage", {
 
-        message: message
+    // IMPORTANT:
+    // Backend expects the message text directly.
+    //
+    // server.js:
+    // socket.on("sendMessage", async (messageText) => {
 
-    });
+    socket.emit(
+        "sendMessage",
+        message
+    );
 
 
     messageInput.value = "";
@@ -412,7 +449,9 @@ function sendMessage() {
 }
 
 
-// Button click
+// =====================================================
+// SEND BUTTON
+// =====================================================
 
 if (sendMessageBtn) {
 
@@ -424,7 +463,9 @@ if (sendMessageBtn) {
 }
 
 
-// Press Enter
+// =====================================================
+// SEND MESSAGE USING ENTER
+// =====================================================
 
 if (messageInput) {
 
@@ -433,6 +474,8 @@ if (messageInput) {
         (event) => {
 
             if (event.key === "Enter") {
+
+                event.preventDefault();
 
                 sendMessage();
 
@@ -444,23 +487,113 @@ if (messageInput) {
 }
 
 
-// Receive message from backend
+// =====================================================
+// CHAT HISTORY
+// =====================================================
 
-socket.on("receiveMessage", (data) => {
+socket.on("chatHistory", (messages) => {
+
+    console.log(
+        "Chat history received:",
+        messages
+    );
+
+
+    if (!messagesDiv) {
+
+        console.error(
+            "messages element not found."
+        );
+
+        return;
+
+    }
+
+
+    /*
+     * If there are no previous messages,
+     * keep the default "Welcome to the meeting!"
+     * message already present in index.html.
+     */
+
+    if (!messages || messages.length === 0) {
+
+        return;
+
+    }
+
+
+    // Remove default welcome message
+
+    messagesDiv.innerHTML = "";
+
+
+    messages.forEach((message) => {
+
+        addMessage(
+            message.name || "Participant",
+            message.text || "",
+            message.time || ""
+        );
+
+    });
+
+});
+
+
+// =====================================================
+// NEW REAL-TIME MESSAGE
+// =====================================================
+
+socket.on("newMessage", (message) => {
+
+    console.log(
+        "New message received:",
+        message
+    );
+
 
     addMessage(
-        data.name || "Participant",
-        data.message
+        message.name || "Participant",
+        message.text || "",
+        message.time || ""
     );
 
 });
 
 
-// Display message
+// =====================================================
+// MESSAGE SAVE ERROR
+// =====================================================
 
-function addMessage(name, message) {
+socket.on("messageSaveError", (message) => {
+
+    console.error(
+        "Message save error:",
+        message
+    );
+
+
+    alert(message);
+
+});
+
+
+// =====================================================
+// DISPLAY MESSAGE
+// =====================================================
+
+function addMessage(
+    name,
+    message,
+    time = ""
+) {
 
     if (!messagesDiv) {
+
+        console.error(
+            "messages element not found."
+        );
 
         return;
 
@@ -482,18 +615,33 @@ function addMessage(name, message) {
     messageDiv.innerHTML = `
 
         <div class="avatar">
+
             ${firstLetter}
+
         </div>
+
 
         <div class="message-content">
 
             <strong>
+
                 ${name}
+
             </strong>
 
+
             <p>
+
                 ${message}
+
             </p>
+
+
+            ${
+                time
+                    ? `<small>${time}</small>`
+                    : ""
+            }
 
         </div>
 
@@ -514,7 +662,7 @@ function addMessage(name, message) {
 
 
 // =====================================================
-// AI SUMMARY EVENTS
+// AI SUMMARY
 // =====================================================
 
 const generateSummaryBtn =
@@ -522,14 +670,6 @@ const generateSummaryBtn =
         "generateSummaryBtn"
     );
 
-
-/*
- * The actual AI summary generation is
- * handled by the backend.
- *
- * Frontend only sends the request and
- * displays the response.
- */
 
 if (generateSummaryBtn) {
 
@@ -540,6 +680,7 @@ if (generateSummaryBtn) {
             console.log(
                 "Requesting AI meeting summary..."
             );
+
 
             socket.emit(
                 "generateSummary"
@@ -601,6 +742,32 @@ socket.on("summaryError", (error) => {
 
 
 // =====================================================
+// NOT AUTHORIZED
+// =====================================================
+
+socket.on("notAuthorized", () => {
+
+    alert(
+        "Only the meeting admin can generate the AI summary."
+    );
+
+});
+
+
+// =====================================================
+// MEETING NOT FOUND
+// =====================================================
+
+socket.on("meetingNotFound", () => {
+
+    alert(
+        "Meeting not found."
+    );
+
+});
+
+
+// =====================================================
 // DISPLAY AI SUMMARY
 // =====================================================
 
@@ -614,6 +781,10 @@ function displaySummary(summary) {
 
     if (!container) {
 
+        console.error(
+            "summaryContainer not found."
+        );
+
         return;
 
     }
@@ -623,7 +794,9 @@ function displaySummary(summary) {
         "block";
 
 
-    // Summary
+    // -------------------------------------------------
+    // SUMMARY
+    // -------------------------------------------------
 
     const summaryText =
         document.getElementById(
@@ -634,12 +807,15 @@ function displaySummary(summary) {
     if (summaryText) {
 
         summaryText.innerText =
-            summary.summary || "No summary available.";
+            summary.summary ||
+            "No summary available.";
 
     }
 
 
-    // Key Points
+    // -------------------------------------------------
+    // KEY POINTS
+    // -------------------------------------------------
 
     displayList(
         "keyPoints",
@@ -647,7 +823,9 @@ function displaySummary(summary) {
     );
 
 
-    // Decisions
+    // -------------------------------------------------
+    // DECISIONS
+    // -------------------------------------------------
 
     displayList(
         "decisions",
@@ -655,14 +833,18 @@ function displaySummary(summary) {
     );
 
 
-    // Action Items
+    // -------------------------------------------------
+    // ACTION ITEMS
+    // -------------------------------------------------
 
     displayActionItems(
         summary.actionItems
     );
 
 
-    // Unresolved Issues
+    // -------------------------------------------------
+    // UNRESOLVED ISSUES
+    // -------------------------------------------------
 
     displayList(
         "unresolvedIssues",
@@ -676,7 +858,10 @@ function displaySummary(summary) {
 // DISPLAY LIST
 // =====================================================
 
-function displayList(elementId, items) {
+function displayList(
+    elementId,
+    items
+) {
 
     const element =
         document.getElementById(
@@ -699,10 +884,15 @@ function displayList(elementId, items) {
         const li =
             document.createElement("li");
 
+
         li.innerText =
             "None";
 
-        element.appendChild(li);
+
+        element.appendChild(
+            li
+        );
+
 
         return;
 
@@ -714,10 +904,14 @@ function displayList(elementId, items) {
         const li =
             document.createElement("li");
 
+
         li.innerText =
             item;
 
-        element.appendChild(li);
+
+        element.appendChild(
+            li
+        );
 
     });
 
@@ -769,21 +963,32 @@ function displayActionItems(items) {
         div.innerHTML = `
 
             <div class="action-person">
+
                 ${item.person || "Team"}
+
             </div>
+
 
             <div>
+
                 ${item.task || ""}
+
             </div>
 
+
             <div class="action-deadline">
-                Deadline: ${item.deadline || "None"}
+
+                Deadline:
+                ${item.deadline || "None"}
+
             </div>
 
         `;
 
 
-        container.appendChild(div);
+        container.appendChild(
+            div
+        );
 
     });
 
